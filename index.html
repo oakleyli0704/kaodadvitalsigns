@@ -157,31 +157,30 @@
     gap: 8px;
   }
   .wheel-sep { font-size: 36px; font-weight: 700; color: #2C2C2A; line-height: 1; }
-  .wheel-col { position: relative; width: 90px; height: 180px; overflow: hidden; }
+  .wheel-col { position: relative; width: 90px; height: 192px; overflow: hidden; }
   .wheel-col::before, .wheel-col::after {
     content: '';
-    position: absolute; left: 0; right: 0; height: 60px; z-index: 2;
+    position: absolute; left: 0; right: 0; height: 64px; z-index: 2;
     pointer-events: none;
   }
   .wheel-col::before { top: 0; background: linear-gradient(to bottom, rgba(255,255,255,0.95), transparent); }
   .wheel-col::after  { bottom: 0; background: linear-gradient(to top, rgba(255,255,255,0.95), transparent); }
   .wheel-highlight {
     position: absolute; left: 0; right: 0;
-    top: 60px; height: 60px;
+    top: 64px; height: 64px;
     background: #EEEDFE; border-radius: 12px; z-index: 1;
     pointer-events: none;
   }
   .wheel-list {
     position: absolute; left: 0; right: 0;
-    transition: transform 0.2s cubic-bezier(.25,.8,.25,1);
     z-index: 3;
   }
   .wheel-item {
-    height: 60px; line-height: 60px;
+    height: 64px; line-height: 64px;
     text-align: center;
     font-size: 32px; font-weight: 700;
     color: #B4B2A9;
-    user-select: none;
+    user-select: none; touch-action: none;
   }
   .wheel-item.active { color: #3C3489; }
   .time-done {
@@ -279,7 +278,7 @@
         <div class="wheel-list" id="wl-min"></div>
       </div>
     </div>
-    <button class="time-done" onclick="closeTime()">確定</button>
+    <button class="time-done" onclick="confirmTime()">確定</button>
   </div>
 </div>
 
@@ -399,71 +398,136 @@ function closeCal() { document.getElementById('cal-overlay').classList.remove('o
 function calOverlayClick(e) { if(e.target===document.getElementById('cal-overlay')) closeCal(); }
 
 // ── 時間滾輪 ─────────────────────────────────────
-function buildWheel(listId, count, selected, pad) {
+// 統一公式：列表頂部有 2 個空白 padding，
+// 第 i 個數字的 top = (i+2)*IH，
+// 要讓第 idx 個對準中間 highlight (top=2*IH)，
+// 需要 translateY = -(idx * IH)，與 padding 無關。
+const IH = 64; // item height px，需與 CSS .wheel-item height 一致
+
+function idxToY(idx) { return -(idx * IH); }
+
+function buildWheel(listId, count, selected, maxAllowed) {
+  const limit = (maxAllowed !== undefined) ? maxAllowed : count - 1;
+  if (selected > limit) selected = limit;
   const el = document.getElementById(listId);
   let html = '<div class="wheel-item"></div><div class="wheel-item"></div>';
-  for (let i = 0; i < count; i++)
-    html += `<div class="wheel-item${i===selected?' active':''}" data-val="${i}">${pad?fmt2(i):i}</div>`;
+  for (let i = 0; i < count; i++) {
+    const isDisabled = i > limit;
+    html += `<div class="wheel-item${i===selected?' active':''}${isDisabled?' disabled':''}"
+      data-val="${i}"
+      style="${isDisabled?'opacity:0.25;pointer-events:none':''}">${fmt2(i)}</div>`;
+  }
   html += '<div class="wheel-item"></div><div class="wheel-item"></div>';
   el.innerHTML = html;
-  setWheelPos(listId.replace('wl-','wheel-'), listId, selected);
+  el.style.transition = 'none';
+  el.style.transform  = `translateY(${idxToY(selected)}px)`;
 }
 
-function setWheelPos(colId, listId, idx) {
-  // +2 補償開頭兩個空白 padding，讓選中項對準中間 highlight
-  document.getElementById(listId).style.transform = `translateY(${-(idx - 2) * 60}px)`;
+function snapWheel(listEl, idx, maxVal) {
+  idx = Math.max(0, Math.min(maxVal - 1, idx));
+  listEl.style.transition = 'transform 0.18s cubic-bezier(.25,.8,.25,1)';
+  listEl.style.transform  = `translateY(${idxToY(idx)}px)`;
+  listEl.querySelectorAll('.wheel-item[data-val]').forEach(el =>
+    el.classList.toggle('active', Number(el.dataset.val) === idx)
+  );
+  return idx;
 }
 
-function wheelScroll(colId, listId, maxVal, isHour) {
+function attachWheel(colId, listId, getMax, getVal, setVal) {
   const col  = document.getElementById(colId);
   const list = document.getElementById(listId);
-  let startY, startIdx, dragging = false;
+  let startY = 0, startIdx = 0, dragging = false;
 
-  col.addEventListener('touchstart', e => {
-    e.stopPropagation();
+  // 每次重新附加前先清除舊監聽（clone 節點）
+  const newCol = col.cloneNode(true);
+  col.parentNode.replaceChild(newCol, col);
+
+  newCol.addEventListener('touchstart', e => {
+    e.preventDefault();
     startY   = e.touches[0].clientY;
-    startIdx = isHour ? selHour : selMin;
+    startIdx = getVal();
     dragging = true;
     list.style.transition = 'none';
   }, { passive: false });
 
-  col.addEventListener('touchmove', e => {
+  newCol.addEventListener('touchmove', e => {
     if (!dragging) return;
-    e.preventDefault();    // ★ 阻止頁面跟著捲動
-    e.stopPropagation();
-    const dy       = startY - e.touches[0].clientY;
-    const floatIdx = startIdx + dy / 60;
-    const idx      = Math.max(0, Math.min(maxVal - 1, Math.round(floatIdx)));
-    const clampF   = Math.max(0, Math.min(maxVal - 1, floatIdx));
-    if (isHour) selHour = idx; else selMin = idx;
-    // 跟手即時移動（用 floatIdx 讓畫面更滑順）
-    list.style.transform = `translateY(${-(clampF - 2) * 60}px)`;
-    list.querySelectorAll('.wheel-item[data-val]').forEach(el => {
-      el.classList.toggle('active', Number(el.dataset.val) === idx);
-    });
+    e.preventDefault();
+    const dy      = startY - e.touches[0].clientY;
+    const floatIdx = startIdx + dy / IH;
+    const maxVal   = getMax();
+    const clamped  = Math.max(0, Math.min(maxVal, floatIdx));
+    const idx      = Math.round(clamped);
+    setVal(idx);
+    // 跟手用 float 讓畫面更滑順
+    list.style.transform = `translateY(${idxToY(clamped)}px)`;
+    list.querySelectorAll('.wheel-item[data-val]').forEach(el =>
+      el.classList.toggle('active', Number(el.dataset.val) === idx)
+    );
   }, { passive: false });
 
-  col.addEventListener('touchend', () => {
+  newCol.addEventListener('touchend', () => {
     if (!dragging) return;
     dragging = false;
-    // 放手後 snap 回整數格，加緩動動畫
-    const idx = isHour ? selHour : selMin;
-    list.style.transition = 'transform 0.2s cubic-bezier(.25,.8,.25,1)';
-    list.style.transform  = `translateY(${-(idx - 2) * 60}px)`;
-    list.querySelectorAll('.wheel-item[data-val]').forEach(el => {
-      el.classList.toggle('active', Number(el.dataset.val) === idx);
-    });
+    snapWheel(list, getVal(), getMax());
   }, { passive: false });
+}
+
+function getMaxHour() {
+  const now = new Date();
+  const isToday = selDate.y===now.getFullYear() && selDate.m===now.getMonth() && selDate.d===now.getDate();
+  return isToday ? now.getHours() : 23;
+}
+function getMaxMin() {
+  const now = new Date();
+  const isToday = selDate.y===now.getFullYear() && selDate.m===now.getMonth() && selDate.d===now.getDate();
+  return (isToday && selHour === now.getHours()) ? now.getMinutes() : 59;
 }
 
 function openTime() {
-  buildWheel('wl-hour', 24, selHour, true);
-  buildWheel('wl-min',  60, selMin,  true);
+  const maxH = getMaxHour();
+  const maxM = getMaxMin();
+  if (selHour > maxH) selHour = maxH;
+  if (selMin  > maxM) selMin  = maxM;
+
+  buildWheel('wl-hour', 24, selHour, maxH);
+  buildWheel('wl-min',  60, selMin,  maxM);
   document.getElementById('time-overlay').classList.add('open');
-  wheelScroll('wheel-hour','wl-hour',24,true);
-  wheelScroll('wheel-min','wl-min',60,false);
+
+  attachWheel('wheel-hour', 'wl-hour',
+    () => getMaxHour(),
+    () => selHour,
+    v  => {
+      selHour = v;
+      // 小時改變時，重新計算分鐘上限
+      const newMaxM = getMaxMin();
+      if (selMin > newMaxM) selMin = newMaxM;
+      buildWheel('wl-min', 60, selMin, newMaxM);
+      attachWheel('wheel-min', 'wl-min',
+        () => getMaxMin(), () => selMin, v2 => { selMin = v2; }
+      );
+    }
+  );
+  attachWheel('wheel-min', 'wl-min',
+    () => getMaxMin(),
+    () => selMin,
+    v  => { selMin = v; }
+  );
 }
 function closeTime() {
+  document.getElementById('time-overlay').classList.remove('open');
+  updateTimeDisp();
+}
+function confirmTime() {
+  const now = new Date();
+  const isToday = selDate.y===now.getFullYear() && selDate.m===now.getMonth() && selDate.d===now.getDate();
+  if (isToday) {
+    if (selHour > now.getHours() || (selHour===now.getHours() && selMin>now.getMinutes())) {
+      selHour = now.getHours();
+      selMin  = now.getMinutes();
+      alert('不能選擇未來的時間，已自動調整為現在時間。');
+    }
+  }
   document.getElementById('time-overlay').classList.remove('open');
   updateTimeDisp();
 }
@@ -484,25 +548,33 @@ function selectHand(h) {
     document.getElementById('btn-'+k).classList.toggle('selected', k===h));
 }
 
-// ── 本地紀錄 ─────────────────────────────────────
-let records = JSON.parse(localStorage.getItem('bp_records') || '[]');
+// ── 從 Google Sheet 讀取近十筆紀錄 ──────────────────
+const READ_URL = SCRIPT_URL; // 用同一個 Apps Script，doGet 回傳資料
 
-function renderRecords() {
+async function fetchAndRenderRecords() {
   const list = document.getElementById('records-list');
-  if (!records.length) { list.innerHTML = '<p class="empty">尚無記錄</p>'; return; }
-  const recent = records.slice(-10).reverse();
-  list.innerHTML = recent.map(r => `
-    <div class="record-item">
-      <div class="record-left">
-        <div class="record-time">${r.date} ${r.time}</div>
-        <div class="record-meta">${r.posture} ${r.hand}</div>
-      </div>
-      <div class="record-vals">
-        <div class="rv hr"><div class="lbl">心跳</div><div class="val">${r.hr}</div></div>
-        <div class="rv bp"><div class="lbl">血壓</div><div class="val">${r.bp}</div></div>
-        <div class="rv spo2"><div class="lbl">血氧</div><div class="val">${r.spo2}%</div></div>
-      </div>
-    </div>`).join('');
+  list.innerHTML = '<p class="empty">讀取中…</p>';
+  try {
+    const res  = await fetch(READ_URL + '?action=records');
+    const json = await res.json();
+    if (!json.records || !json.records.length) {
+      list.innerHTML = '<p class="empty">尚無記錄</p>'; return;
+    }
+    list.innerHTML = json.records.map(r => `
+      <div class="record-item">
+        <div class="record-left">
+          <div class="record-time">${r.date} ${r.time}</div>
+          <div class="record-meta">${r.posture} ${r.hand}</div>
+        </div>
+        <div class="record-vals">
+          <div class="rv hr"><div class="lbl">心跳</div><div class="val">${r.hr}</div></div>
+          <div class="rv bp"><div class="lbl">血壓</div><div class="val">${r.bp}</div></div>
+          <div class="rv spo2"><div class="lbl">血氧</div><div class="val">${r.spo2}%</div></div>
+        </div>
+      </div>`).join('');
+  } catch(e) {
+    list.innerHTML = '<p class="empty">讀取失敗，請確認網路</p>';
+  }
 }
 
 // ── 送出 ─────────────────────────────────────────
@@ -525,7 +597,8 @@ async function submitRecord() {
   const bp      = `${sys}/${dia}`;
   const posture = {lie:'躺',sit:'坐',stand:'站'}[selectedPosture];
   const hand    = selectedHand==='left' ? '左手' : '右手';
-  const payload = { date: dateStr, time: timeStr, posture, hand, hr, bp, spo2 };
+  const uploadDateTime = `${dateStr} ${timeStr}`;
+  const payload = { uploadDateTime, date: dateStr, time: timeStr, posture, hand, hr, bp, spo2 };
 
   records.push({ date: dispDate, time: timeStr, posture, hand, hr, bp, spo2 });
   localStorage.setItem('bp_records', JSON.stringify(records));
@@ -549,13 +622,15 @@ async function submitRecord() {
     st.className='status error';
     st.textContent='⚠️ 本機已儲存，但 Google Sheet 同步失敗';
   }
-  setTimeout(()=>{ st.textContent=''; }, 3500);
+  setTimeout(()=>{ st.textContent=''; fetchAndRenderRecords(); }, 3500);
 }
 
 window.addEventListener('load', () => {
   updateDateDisp();
   updateTimeDisp();
-  renderRecords();
+  fetchAndRenderRecords();
+  // 每60秒自動刷新一次
+  setInterval(fetchAndRenderRecords, 60000);
 });
 </script>
 </body>
