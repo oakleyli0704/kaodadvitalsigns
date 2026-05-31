@@ -14,245 +14,131 @@
     padding: 16px;
     padding-bottom: 48px;
   }
-  h1 {
-    font-size: 32px;
-    font-weight: 700;
-    text-align: center;
-    color: #2C2C2A;
-    margin: 16px 0 24px;
-    letter-spacing: 3px;
-  }
-  .card {
-    background: #fff;
-    border-radius: 16px;
-    border: 1px solid #E0DDD5;
-    padding: 20px;
-    margin-bottom: 16px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-  }
-  .card-title {
-    font-size: 20px;
-    font-weight: 700;
-    color: #2C2C2A;
-    margin-bottom: 16px;
-    letter-spacing: 1px;
-  }
-  .select-label {
-    font-size: 20px;
-    font-weight: 700;
-    color: #2C2C2A;
-    margin-bottom: 10px;
-  }
+  h1 { font-size: 32px; font-weight: 700; text-align: center; color: #2C2C2A; margin: 16px 0 24px; letter-spacing: 3px; }
+  .card { background: #fff; border-radius: 16px; border: 1px solid #E0DDD5; padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+  .card-title { font-size: 20px; font-weight: 700; color: #2C2C2A; margin-bottom: 16px; letter-spacing: 1px; }
+  .select-label { font-size: 20px; font-weight: 700; color: #2C2C2A; margin-bottom: 10px; }
 
-  /* 選擇按鈕通用 */
   .btn-group { display: grid; gap: 12px; margin-bottom: 20px; }
   .btn-group.col2 { grid-template-columns: 1fr 1fr; }
   .btn-group.col3 { grid-template-columns: 1fr 1fr 1fr; }
-  .sel-btn {
-    height: 72px;
-    font-size: 22px;
-    font-weight: 700;
-    border: 2.5px solid #D3D1C7;
-    border-radius: 14px;
-    background: #F9F8F5;
-    color: #888780;
-    cursor: pointer;
-    transition: all 0.15s;
-    font-family: 'Noto Sans TC', sans-serif;
-    letter-spacing: 2px;
-  }
+  .sel-btn { height: 72px; font-size: 22px; font-weight: 700; border: 2.5px solid #D3D1C7; border-radius: 14px; background: #F9F8F5; color: #888780; cursor: pointer; transition: all 0.15s; font-family: 'Noto Sans TC', sans-serif; letter-spacing: 2px; }
   .sel-btn.selected { background: #EEEDFE; border-color: #3C3489; color: #3C3489; }
   .sel-btn:active { transform: scale(0.97); }
 
-  /* 日期時間顯示列 */
-  .datetime-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-  .dt-box {
-    background: #F9F8F5;
-    border: 2px solid #D3D1C7;
-    border-radius: 12px;
-    padding: 12px 10px;
-    text-align: center;
-    cursor: pointer;
-    transition: border-color 0.15s;
-  }
+  .datetime-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+  .dt-box { background: #F9F8F5; border: 2px solid #D3D1C7; border-radius: 12px; padding: 12px 10px; text-align: center; cursor: pointer; transition: border-color 0.15s; }
   .dt-box:active { border-color: #3C3489; }
   .dt-box .dt-label { font-size: 13px; color: #B4B2A9; margin-bottom: 4px; }
   .dt-box .dt-value { font-size: 22px; font-weight: 700; color: #2C2C2A; }
 
-  /* 遮罩 */
-  .overlay {
-    display: none;
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.45);
-    z-index: 100;
-    align-items: flex-end;
-    justify-content: center;
-  }
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 100; align-items: flex-end; justify-content: center; }
   .overlay.open { display: flex; }
 
-  /* 日曆 popup */
-  .cal-popup {
-    background: #fff;
-    border-radius: 20px 20px 0 0;
-    padding: 20px;
-    width: 100%;
-    max-width: 420px;
-  }
-  .cal-nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-  }
-  .cal-nav button {
-    width: 44px; height: 44px;
-    font-size: 22px; font-weight: 700;
-    background: #F9F8F5; border: 1px solid #D3D1C7;
-    border-radius: 10px; cursor: pointer; color: #2C2C2A;
-  }
+  /* 日曆 */
+  .cal-popup { background: #fff; border-radius: 20px 20px 0 0; padding: 20px; width: 100%; max-width: 420px; }
+  .cal-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .cal-nav button { width: 44px; height: 44px; font-size: 22px; font-weight: 700; background: #F9F8F5; border: 1px solid #D3D1C7; border-radius: 10px; cursor: pointer; color: #2C2C2A; }
   .cal-nav .cal-month { font-size: 20px; font-weight: 700; color: #2C2C2A; }
-  .cal-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 4px;
-    text-align: center;
-  }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
   .cal-grid .day-hdr { font-size: 13px; color: #B4B2A9; padding: 4px 0; }
-  .cal-grid .day-cell {
-    height: 42px; line-height: 42px;
-    font-size: 17px; font-weight: 500;
-    border-radius: 10px; cursor: pointer; color: #2C2C2A;
-  }
+  .cal-grid .day-cell { height: 42px; line-height: 42px; font-size: 17px; font-weight: 500; border-radius: 10px; cursor: pointer; color: #2C2C2A; }
   .cal-grid .day-cell:hover { background: #F1EFE8; }
   .cal-grid .day-cell.today { color: #3C3489; font-weight: 700; }
-  .cal-grid .day-cell.selected-day { background: #3C3489; color: #fff !important; border-radius: 10px; }
-  .cal-grid .day-cell.other-month { color: #D3D1C7; }
+  .cal-grid .day-cell.selected-day { background: #3C3489; color: #fff !important; }
   .cal-grid .day-cell.empty { cursor: default; }
-  .cal-done {
-    margin-top: 16px; width: 100%; height: 56px;
-    font-size: 20px; font-weight: 700;
-    background: #3C3489; color: #fff;
-    border: none; border-radius: 12px; cursor: pointer;
-    font-family: 'Noto Sans TC', sans-serif;
-  }
+  .cal-grid .day-cell.future { color: #D3D1C7; pointer-events: none; }
+  .cal-done { margin-top: 16px; width: 100%; height: 56px; font-size: 20px; font-weight: 700; background: #3C3489; color: #fff; border: none; border-radius: 12px; cursor: pointer; font-family: 'Noto Sans TC', sans-serif; }
 
-  /* 時間滾輪 popup */
-  .time-popup {
-    background: #fff;
-    border-radius: 20px 20px 0 0;
-    padding: 20px;
-    width: 100%;
-    max-width: 420px;
+  /* 時間滾輪 */
+  .time-popup { background: #fff; border-radius: 20px 20px 0 0; padding: 24px 20px 20px; width: 100%; max-width: 420px; }
+  .time-popup-title { font-size: 20px; font-weight: 700; color: #2C2C2A; text-align: center; margin-bottom: 20px; }
+  .wheel-wrap { display: flex; align-items: center; justify-content: center; gap: 4px; position: relative; }
+  .wheel-sep { font-size: 40px; font-weight: 700; color: #2C2C2A; line-height: 1; padding: 0 4px; }
+
+  /* 滾輪容器 */
+  .wheel-col {
+    position: relative;
+    width: 96px;
+    height: 216px; /* 3個 item 高度 = 72*3 */
+    overflow: hidden;
+    cursor: grab;
   }
-  .time-popup-title { font-size: 20px; font-weight: 700; color: #2C2C2A; text-align: center; margin-bottom: 16px; }
-  .wheel-wrap {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-  }
-  .wheel-sep { font-size: 36px; font-weight: 700; color: #2C2C2A; line-height: 1; }
-  .wheel-col { position: relative; width: 90px; height: 192px; overflow: hidden; }
+  /* 上下遮罩漸層 */
   .wheel-col::before, .wheel-col::after {
     content: '';
-    position: absolute; left: 0; right: 0; height: 64px; z-index: 2;
+    position: absolute; left: 0; right: 0; height: 72px; z-index: 2;
     pointer-events: none;
   }
-  .wheel-col::before { top: 0; background: linear-gradient(to bottom, rgba(255,255,255,0.95), transparent); }
-  .wheel-col::after  { bottom: 0; background: linear-gradient(to top, rgba(255,255,255,0.95), transparent); }
+  .wheel-col::before { top: 0; background: linear-gradient(to bottom, rgba(255,255,255,0.97) 0%, rgba(255,255,255,0.6) 60%, transparent 100%); }
+  .wheel-col::after  { bottom: 0; background: linear-gradient(to top,   rgba(255,255,255,0.97) 0%, rgba(255,255,255,0.6) 60%, transparent 100%); }
+
+  /* 選中 highlight 框 */
   .wheel-highlight {
-    position: absolute; left: 0; right: 0;
-    top: 64px; height: 64px;
-    background: #EEEDFE; border-radius: 12px; z-index: 1;
+    position: absolute; left: 4px; right: 4px;
+    top: 72px; height: 72px;
+    background: #EEEDFE; border-radius: 14px; z-index: 1;
     pointer-events: none;
   }
   .wheel-list {
-    position: absolute; left: 0; right: 0;
+    position: absolute; left: 0; right: 0; top: 0;
+    will-change: transform;
     z-index: 3;
   }
   .wheel-item {
-    height: 64px; line-height: 64px;
+    height: 72px; line-height: 72px;
     text-align: center;
-    font-size: 32px; font-weight: 700;
-    color: #B4B2A9;
-    user-select: none; touch-action: none;
+    font-size: 36px; font-weight: 700;
+    color: #C0BDBA;
+    user-select: none;
+    touch-action: none;
   }
   .wheel-item.active { color: #3C3489; }
-  .time-done {
-    margin-top: 16px; width: 100%; height: 56px;
-    font-size: 20px; font-weight: 700;
-    background: #3C3489; color: #fff;
-    border: none; border-radius: 12px; cursor: pointer;
-    font-family: 'Noto Sans TC', sans-serif;
-  }
+  .wheel-item.dim { opacity: 0.25; pointer-events: none; }
+
+  .time-done { margin-top: 20px; width: 100%; height: 56px; font-size: 20px; font-weight: 700; background: #3C3489; color: #fff; border: none; border-radius: 12px; cursor: pointer; font-family: 'Noto Sans TC', sans-serif; }
 
   /* 輸入欄位 */
   .field { margin-bottom: 18px; }
   .field:last-child { margin-bottom: 0; }
   .field label { display: block; font-size: 20px; font-weight: 700; color: #2C2C2A; margin-bottom: 8px; }
-  .field input {
-    width: 100%; height: 76px; font-size: 38px; font-weight: 700;
-    text-align: center; border: 2px solid #D3D1C7; border-radius: 12px;
-    color: #2C2C2A; background: #F9F8F5; padding: 0 12px; outline: none;
-    transition: border-color 0.15s; -webkit-appearance: none; appearance: none;
-  }
+  .field input { width: 100%; height: 76px; font-size: 38px; font-weight: 700; text-align: center; border: 2px solid #D3D1C7; border-radius: 12px; color: #2C2C2A; background: #F9F8F5; padding: 0 12px; outline: none; transition: border-color 0.15s; -webkit-appearance: none; appearance: none; }
   .field input:focus { border-color: #3C3489; background: #fff; }
   .field .hint { font-size: 14px; color: #B4B2A9; text-align: right; margin-top: 5px; }
   .bp-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .bp-row input {
-    width: 100%; height: 76px; font-size: 38px; font-weight: 700;
-    text-align: center; border: 2px solid #D3D1C7; border-radius: 12px;
-    color: #2C2C2A; background: #F9F8F5; padding: 0 8px; outline: none;
-    transition: border-color 0.15s; -webkit-appearance: none; appearance: none;
-    font-family: 'Noto Sans TC', sans-serif;
-  }
+  .bp-row input { width: 100%; height: 76px; font-size: 38px; font-weight: 700; text-align: center; border: 2px solid #D3D1C7; border-radius: 12px; color: #2C2C2A; background: #F9F8F5; padding: 0 8px; outline: none; transition: border-color 0.15s; -webkit-appearance: none; appearance: none; font-family: 'Noto Sans TC', sans-serif; }
   .bp-row input:focus { border-color: #3C3489; background: #fff; }
   .bp-labels { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 5px; }
   .bp-labels span { text-align: center; font-size: 13px; color: #B4B2A9; }
 
   /* 送出 */
-  .submit-btn {
-    width: 100%; height: 72px; font-size: 26px; font-weight: 700;
-    background: #3C3489; color: #fff; border: none; border-radius: 14px;
-    cursor: pointer; letter-spacing: 3px; transition: opacity 0.15s, transform 0.1s;
-    font-family: 'Noto Sans TC', sans-serif;
-  }
+  .submit-btn { width: 100%; height: 72px; font-size: 26px; font-weight: 700; background: #3C3489; color: #fff; border: none; border-radius: 14px; cursor: pointer; letter-spacing: 3px; transition: opacity 0.15s, transform 0.1s; font-family: 'Noto Sans TC', sans-serif; }
   .submit-btn:active { opacity: 0.85; transform: scale(0.98); }
   .status { text-align: center; font-size: 18px; font-weight: 500; min-height: 30px; margin: 12px 0 4px; color: #3C3489; }
   .status.error { color: #A32D2D; }
 
   /* 近期紀錄 */
   .records-header { font-size: 20px; font-weight: 700; color: #2C2C2A; margin-bottom: 12px; }
-  .record-item {
-    padding: 14px 0; border-bottom: 1px solid #F1EFE8;
-    display: flex; justify-content: space-between; align-items: center; gap: 8px;
-  }
+  .record-item { padding: 14px 0; border-bottom: 1px solid #F1EFE8; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
   .record-item:last-child { border-bottom: none; }
-  .record-left { display: flex; flex-direction: column; gap: 3px; min-width: 80px; }
-  .record-time { font-size: 12px; color: #B4B2A9; }
-  .record-meta { font-size: 12px; color: #888780; font-weight: 500; }
-  .record-vals { display: flex; gap: 8px; }
-  .rv { text-align: center; min-width: 48px; }
-  .rv .lbl { font-size: 11px; color: #B4B2A9; margin-bottom: 2px; }
-  .rv .val { font-size: 14px; font-weight: 700; }
-  .rv.hr .val  { color: #993C1D; }
-  .rv.bp .val  { color: #3C3489; }
-  .rv.spo2 .val { color: #0F6E56; }
+  .record-left { display: flex; flex-direction: column; gap: 4px; min-width: 80px; }
+  .record-time { font-size: 13px; color: #888780; font-weight: 500; }
+  .record-meta { font-size: 12px; color: #B4B2A9; }
+  .record-vals { display: flex; gap: 10px; }
+  .rv { text-align: center; min-width: 52px; }
+  .rv .lbl { font-size: 12px; color: #2C2C2A; font-weight: 700; margin-bottom: 3px; }
+  .rv .val { font-size: 17px; font-weight: 700; color: #3C3489; }
+  .rv .val.abnormal { color: #D0021B; }
   .empty { text-align: center; color: #B4B2A9; font-size: 16px; padding: 24px 0; }
+  .refresh-btn { float: right; font-size: 13px; color: #3C3489; background: none; border: none; cursor: pointer; font-family: 'Noto Sans TC', sans-serif; padding: 0; }
 </style>
 </head>
 <body>
-
 <h1>🩺 健康量測記錄</h1>
 
 <!-- 日曆 overlay -->
 <div class="overlay" id="cal-overlay" onclick="calOverlayClick(event)">
-  <div class="cal-popup" id="cal-popup">
+  <div class="cal-popup">
     <div class="cal-nav">
       <button onclick="calPrev()">‹</button>
       <span class="cal-month" id="cal-month-label"></span>
@@ -285,8 +171,6 @@
 <!-- 輸入區 -->
 <div class="card">
   <p class="card-title">📋 量測輸入</p>
-
-  <!-- 日期時間 -->
   <p class="select-label" style="margin-bottom:10px;">測量時間</p>
   <div class="datetime-row">
     <div class="dt-box" onclick="openCal()">
@@ -299,7 +183,6 @@
     </div>
   </div>
 
-  <!-- 測量姿勢 -->
   <p class="select-label">測量姿勢</p>
   <div class="btn-group col3">
     <button class="sel-btn" id="btn-lie"   onclick="selectPosture('lie')">躺</button>
@@ -307,21 +190,18 @@
     <button class="sel-btn" id="btn-stand" onclick="selectPosture('stand')">站</button>
   </div>
 
-  <!-- 測量部位 -->
   <p class="select-label">測量部位</p>
   <div class="btn-group col2">
     <button class="sel-btn" id="btn-left"  onclick="selectHand('left')">左手</button>
     <button class="sel-btn" id="btn-right" onclick="selectHand('right')">右手</button>
   </div>
 
-  <!-- 心跳 -->
   <div class="field">
     <label>心跳</label>
     <input type="number" inputmode="numeric" id="hr" min="30" max="220">
     <p class="hint">次 / 分鐘</p>
   </div>
 
-  <!-- 血壓 -->
   <div class="field">
     <label>血壓</label>
     <div class="bp-row">
@@ -334,7 +214,6 @@
     </div>
   </div>
 
-  <!-- 血氧 -->
   <div class="field">
     <label>血氧 SpO₂</label>
     <input type="number" inputmode="numeric" id="spo2" min="70" max="100">
@@ -345,143 +224,152 @@
 <button class="submit-btn" onclick="submitRecord()">✅ 儲存記錄</button>
 <p class="status" id="status"></p>
 
-<!-- 近期紀錄 -->
 <div class="card">
-  <p class="records-header">📊 近期十筆紀錄</p>
-  <div id="records-list"><p class="empty">尚無記錄</p></div>
+  <p class="records-header">📊 近期十筆紀錄 <button class="refresh-btn" onclick="fetchAndRenderRecords()">↻ 刷新</button></p>
+  <div id="records-list"><p class="empty">載入中…</p></div>
 </div>
 
 <script>
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxZwnQjorYfj8xY7iOTO5naWbDDuHDBVfRDX38kATqkfhw73oIJiPi6iyO1sPLuecRPqA/exec';
 
-// ── 日期時間狀態 ─────────────────────────────────
+// ── 日期時間狀態 ──────────────────────────────────
 const now0 = new Date();
 let selDate = { y: now0.getFullYear(), m: now0.getMonth(), d: now0.getDate() };
 let selHour = now0.getHours();
 let selMin  = now0.getMinutes();
 
-function fmt2(n) { return String(n).padStart(2,'0'); }
-
-function updateDateDisp() {
-  document.getElementById('disp-date').textContent =
-    `${selDate.m+1}/${selDate.d}`;
-}
-function updateTimeDisp() {
-  document.getElementById('disp-time').textContent =
-    `${fmt2(selHour)}:${fmt2(selMin)}`;
-}
+function fmt2(n) { return String(n).padStart(2, '0'); }
+function updateDateDisp() { document.getElementById('disp-date').textContent = `${selDate.m+1}/${selDate.d}`; }
+function updateTimeDisp() { document.getElementById('disp-time').textContent = `${fmt2(selHour)}:${fmt2(selMin)}`; }
 
 // ── 日曆 ─────────────────────────────────────────
 let calView = { y: selDate.y, m: selDate.m };
 const WD = ['日','一','二','三','四','五','六'];
 
 function buildCal() {
-  const label = document.getElementById('cal-month-label');
-  label.textContent = `${calView.y} 年 ${calView.m+1} 月`;
-  const grid = document.getElementById('cal-grid');
+  document.getElementById('cal-month-label').textContent = `${calView.y} 年 ${calView.m+1} 月`;
+  const grid  = document.getElementById('cal-grid');
+  const today = new Date();
   grid.innerHTML = WD.map(w => `<div class="day-hdr">${w}</div>`).join('');
   const first = new Date(calView.y, calView.m, 1).getDay();
   const days  = new Date(calView.y, calView.m+1, 0).getDate();
-  const today = new Date();
   for (let i = 0; i < first; i++) grid.innerHTML += `<div class="day-cell empty"></div>`;
   for (let d = 1; d <= days; d++) {
-    const isToday = d===today.getDate() && calView.m===today.getMonth() && calView.y===today.getFullYear();
-    const isSel   = d===selDate.d && calView.m===selDate.m && calView.y===selDate.y;
-    grid.innerHTML += `<div class="day-cell${isToday?' today':''}${isSel?' selected-day':''}" onclick="pickDay(${d})">${d}</div>`;
+    const cellDate  = new Date(calView.y, calView.m, d);
+    const isFuture  = cellDate > today;
+    const isToday   = d===today.getDate() && calView.m===today.getMonth() && calView.y===today.getFullYear();
+    const isSel     = d===selDate.d && calView.m===selDate.m && calView.y===selDate.y;
+    const cls = ['day-cell', isToday?'today':'', isSel?'selected-day':'', isFuture?'future':''].filter(Boolean).join(' ');
+    grid.innerHTML += `<div class="${cls}" onclick="${isFuture?'':' pickDay('+d+')'}">${d}</div>`;
   }
 }
 function calPrev() { calView.m--; if(calView.m<0){calView.m=11;calView.y--;} buildCal(); }
-function calNext() { calView.m++; if(calView.m>11){calView.m=0;calView.y++;} buildCal(); }
+function calNext() {
+  const next = new Date(calView.y, calView.m+1, 1);
+  if (next > new Date()) return; // 不能往未來的月份
+  calView.m++; if(calView.m>11){calView.m=0;calView.y++;} buildCal();
+}
 function pickDay(d) { selDate={y:calView.y,m:calView.m,d}; buildCal(); }
 function openCal()  { calView={y:selDate.y,m:selDate.m}; buildCal(); document.getElementById('cal-overlay').classList.add('open'); }
 function closeCal() { document.getElementById('cal-overlay').classList.remove('open'); updateDateDisp(); }
 function calOverlayClick(e) { if(e.target===document.getElementById('cal-overlay')) closeCal(); }
 
 // ── 時間滾輪 ─────────────────────────────────────
-// 統一公式：列表頂部有 2 個空白 padding，
-// 第 i 個數字的 top = (i+2)*IH，
-// 要讓第 idx 個對準中間 highlight (top=2*IH)，
-// 需要 translateY = -(idx * IH)，與 padding 無關。
-const IH = 64; // item height px，需與 CSS .wheel-item height 一致
+const IH = 72; // item height，與 CSS .wheel-item height 一致
 
-function idxToY(idx) { return -(idx * IH); }
+// translateY：讓第 idx 個 item 對準 highlight（highlight top = IH，即第3個位置）
+// 頭尾各有 2 個空白 padding item
+// item[0] 的 top = 0（在 padding 之後，所以實際 top = 2*IH）
+// 要讓 item[idx] 的中心對準 highlight 中心（top=IH + IH/2）
+// => list translateY = -(idx * IH)   ← 公式就是這個
+function idxToY(idx) {
+  return -(idx * IH);
+}
 
 function buildWheel(listId, count, selected, maxAllowed) {
   const limit = (maxAllowed !== undefined) ? maxAllowed : count - 1;
   if (selected > limit) selected = limit;
+  if (selected < 0)    selected = 0;
   const el = document.getElementById(listId);
-  let html = '<div class="wheel-item"></div><div class="wheel-item"></div>';
+  // 2個空白 padding，讓第一個數字可以滾到中間
+  let html = `<div class="wheel-item"></div><div class="wheel-item"></div>`;
   for (let i = 0; i < count; i++) {
-    const isDisabled = i > limit;
-    html += `<div class="wheel-item${i===selected?' active':''}${isDisabled?' disabled':''}"
-      data-val="${i}"
-      style="${isDisabled?'opacity:0.25;pointer-events:none':''}">${fmt2(i)}</div>`;
+    const active = i === selected ? ' active' : '';
+    const dim    = i > limit ? ' dim' : '';
+    html += `<div class="wheel-item${active}${dim}" data-val="${i}">${fmt2(i)}</div>`;
   }
-  html += '<div class="wheel-item"></div><div class="wheel-item"></div>';
+  html += `<div class="wheel-item"></div><div class="wheel-item"></div>`;
   el.innerHTML = html;
   el.style.transition = 'none';
   el.style.transform  = `translateY(${idxToY(selected)}px)`;
 }
 
-function snapWheel(listEl, idx, maxVal) {
-  idx = Math.max(0, Math.min(maxVal - 1, idx));
-  listEl.style.transition = 'transform 0.18s cubic-bezier(.25,.8,.25,1)';
+function snapTo(listEl, idx, limit) {
+  idx = Math.max(0, Math.min(limit, idx));
+  listEl.style.transition = 'transform 0.2s cubic-bezier(.25,.8,.25,1)';
   listEl.style.transform  = `translateY(${idxToY(idx)}px)`;
-  listEl.querySelectorAll('.wheel-item[data-val]').forEach(el =>
-    el.classList.toggle('active', Number(el.dataset.val) === idx)
-  );
+  listEl.querySelectorAll('.wheel-item[data-val]').forEach(el => {
+    el.classList.toggle('active', Number(el.dataset.val) === idx);
+  });
   return idx;
 }
 
-function attachWheel(colId, listId, getMax, getVal, setVal) {
-  const col  = document.getElementById(colId);
-  const list = document.getElementById(listId);
+function attachDrag(colEl, listEl, getLimit, getCur, setCur, onChanged) {
   let startY = 0, startIdx = 0, dragging = false;
 
-  // 每次重新附加前先清除舊監聽（clone 節點）
-  const newCol = col.cloneNode(true);
-  col.parentNode.replaceChild(newCol, col);
-
-  newCol.addEventListener('touchstart', e => {
+  colEl.addEventListener('touchstart', e => {
     e.preventDefault();
     startY   = e.touches[0].clientY;
-    startIdx = getVal();
+    startIdx = getCur();
     dragging = true;
-    list.style.transition = 'none';
+    listEl.style.transition = 'none';
   }, { passive: false });
 
-  newCol.addEventListener('touchmove', e => {
+  colEl.addEventListener('touchmove', e => {
     if (!dragging) return;
     e.preventDefault();
     const dy      = startY - e.touches[0].clientY;
-    const floatIdx = startIdx + dy / IH;
-    const maxVal   = getMax();
-    const clamped  = Math.max(0, Math.min(maxVal, floatIdx));
-    const idx      = Math.round(clamped);
-    setVal(idx);
-    // 跟手用 float 讓畫面更滑順
-    list.style.transform = `translateY(${idxToY(clamped)}px)`;
-    list.querySelectorAll('.wheel-item[data-val]').forEach(el =>
+    const limit   = getLimit();
+    const floatI  = startIdx + dy / IH;
+    const clamped = Math.max(0, Math.min(limit, floatI));
+    const idx     = Math.round(clamped);
+    setCur(idx);
+    listEl.style.transform = `translateY(${idxToY(clamped)}px)`;
+    listEl.querySelectorAll('.wheel-item[data-val]').forEach(el =>
       el.classList.toggle('active', Number(el.dataset.val) === idx)
     );
   }, { passive: false });
 
-  newCol.addEventListener('touchend', () => {
+  colEl.addEventListener('touchend', () => {
     if (!dragging) return;
     dragging = false;
-    snapWheel(list, getVal(), getMax());
+    const limit = getLimit();
+    const idx   = snapTo(listEl, getCur(), limit);
+    setCur(idx);
+    if (onChanged) onChanged(idx);
   }, { passive: false });
 }
 
+function getNow() { return new Date(); }
 function getMaxHour() {
-  const now = new Date();
-  const isToday = selDate.y===now.getFullYear() && selDate.m===now.getMonth() && selDate.d===now.getDate();
-  return isToday ? now.getHours() : 23;
+  const n = getNow();
+  return (selDate.y===n.getFullYear()&&selDate.m===n.getMonth()&&selDate.d===n.getDate()) ? n.getHours() : 23;
 }
 function getMaxMin() {
-  const now = new Date();
-  const isToday = selDate.y===now.getFullYear() && selDate.m===now.getMonth() && selDate.d===now.getDate();
-  return (isToday && selHour === now.getHours()) ? now.getMinutes() : 59;
+  const n = getNow();
+  const isToday = selDate.y===n.getFullYear()&&selDate.m===n.getMonth()&&selDate.d===n.getDate();
+  return (isToday && selHour===n.getHours()) ? n.getMinutes() : 59;
+}
+
+function refreshMinWheel() {
+  const maxM = getMaxMin();
+  if (selMin > maxM) selMin = maxM;
+  buildWheel('wl-min', 60, selMin, maxM);
+  attachDrag(
+    document.getElementById('wheel-min'),
+    document.getElementById('wl-min'),
+    getMaxMin, () => selMin, v => { selMin = v; }, null
+  );
 }
 
 function openTime() {
@@ -494,86 +382,95 @@ function openTime() {
   buildWheel('wl-min',  60, selMin,  maxM);
   document.getElementById('time-overlay').classList.add('open');
 
-  attachWheel('wheel-hour', 'wl-hour',
-    () => getMaxHour(),
-    () => selHour,
-    v  => {
-      selHour = v;
-      // 小時改變時，重新計算分鐘上限
-      const newMaxM = getMaxMin();
-      if (selMin > newMaxM) selMin = newMaxM;
-      buildWheel('wl-min', 60, selMin, newMaxM);
-      attachWheel('wheel-min', 'wl-min',
-        () => getMaxMin(), () => selMin, v2 => { selMin = v2; }
-      );
-    }
+  attachDrag(
+    document.getElementById('wheel-hour'),
+    document.getElementById('wl-hour'),
+    getMaxHour, () => selHour,
+    v => { selHour = v; },
+    () => { refreshMinWheel(); }  // 小時改變 → 更新分鐘上限
   );
-  attachWheel('wheel-min', 'wl-min',
-    () => getMaxMin(),
-    () => selMin,
-    v  => { selMin = v; }
+  attachDrag(
+    document.getElementById('wheel-min'),
+    document.getElementById('wl-min'),
+    getMaxMin, () => selMin, v => { selMin = v; }, null
   );
 }
-function closeTime() {
-  document.getElementById('time-overlay').classList.remove('open');
-  updateTimeDisp();
-}
+
 function confirmTime() {
-  const now = new Date();
-  const isToday = selDate.y===now.getFullYear() && selDate.m===now.getMonth() && selDate.d===now.getDate();
-  if (isToday) {
-    if (selHour > now.getHours() || (selHour===now.getHours() && selMin>now.getMinutes())) {
-      selHour = now.getHours();
-      selMin  = now.getMinutes();
-      alert('不能選擇未來的時間，已自動調整為現在時間。');
-    }
+  const n = getNow();
+  const isToday = selDate.y===n.getFullYear()&&selDate.m===n.getMonth()&&selDate.d===n.getDate();
+  if (isToday && (selHour>n.getHours()||(selHour===n.getHours()&&selMin>n.getMinutes()))) {
+    selHour = n.getHours(); selMin = n.getMinutes();
+    alert('不能選擇未來的時間，已自動調整。');
   }
   document.getElementById('time-overlay').classList.remove('open');
   updateTimeDisp();
 }
-function timeOverlayClick(e) { if(e.target===document.getElementById('time-overlay')) closeTime(); }
+function timeOverlayClick(e) { if(e.target===document.getElementById('time-overlay')) confirmTime(); }
 
 // ── 姿勢 / 部位 ──────────────────────────────────
-let selectedPosture = '';
-let selectedHand    = '';
+let selectedPosture = '', selectedHand = '';
+function selectPosture(p) { selectedPosture=p; ['lie','sit','stand'].forEach(k=>document.getElementById('btn-'+k).classList.toggle('selected',k===p)); }
+function selectHand(h)    { selectedHand=h;    ['left','right'].forEach(k=>document.getElementById('btn-'+k).classList.toggle('selected',k===h)); }
 
-function selectPosture(p) {
-  selectedPosture = p;
-  ['lie','sit','stand'].forEach(k =>
-    document.getElementById('btn-'+k).classList.toggle('selected', k===p));
+// ── 異常值判斷（前端用，只做顏色標記）──────────────
+// 這裡用固定標準，後端以 Google Sheet 設定為準
+function isAbnormalHr(v)  { v=Number(v); return v<50||v>110; }
+function isAbnormalSys(v) { v=Number(v); return v<90||v>150; }
+function isAbnormalDia(v) { v=Number(v); return v<60||v>95; }
+function isAbnormalSpo2(v){ v=Number(v); return v<93; }
+function isAbnormalBp(bp) {
+  const p=bp.split('/'); return isAbnormalSys(p[0])||isAbnormalDia(p[1]);
 }
-function selectHand(h) {
-  selectedHand = h;
-  ['left','right'].forEach(k =>
-    document.getElementById('btn-'+k).classList.toggle('selected', k===h));
-}
 
-// ── 從 Google Sheet 讀取近十筆紀錄 ──────────────────
-const READ_URL = SCRIPT_URL; // 用同一個 Apps Script，doGet 回傳資料
-
+// ── 從 Google Sheet 讀取近十筆 ───────────────────
 async function fetchAndRenderRecords() {
   const list = document.getElementById('records-list');
   list.innerHTML = '<p class="empty">讀取中…</p>';
   try {
-    const res  = await fetch(READ_URL + '?action=records');
+    const res  = await fetch(SCRIPT_URL + '?action=records&t=' + Date.now());
     const json = await res.json();
     if (!json.records || !json.records.length) {
       list.innerHTML = '<p class="empty">尚無記錄</p>'; return;
     }
-    list.innerHTML = json.records.map(r => `
+    list.innerHTML = json.records.map(r => {
+      // 時間顯示：uploadDate 欄位是 A欄 "2026/5/31 09:51" 格式的字串
+      const dateTime = r.uploadDate || '';
+      const posture  = r.posture || '';
+      const hand     = r.hand    || '';
+      const hr       = r.hr   !== undefined ? r.hr   : '—';
+      const bp       = r.bp   || '—';
+      const spo2     = r.spo2 !== undefined ? r.spo2 : '—';
+
+      const hrAbn   = isAbnormalHr(hr);
+      const bpAbn   = bp!=='—' && isAbnormalBp(bp);
+      const spo2Abn = isAbnormalSpo2(spo2);
+
+      return `
       <div class="record-item">
         <div class="record-left">
-          <div class="record-time">${r.date} ${r.time}</div>
-          <div class="record-meta">${r.posture} ${r.hand}</div>
+          <div class="record-time">${dateTime}</div>
+          <div class="record-meta">${posture} ${hand}</div>
         </div>
         <div class="record-vals">
-          <div class="rv hr"><div class="lbl">心跳</div><div class="val">${r.hr}</div></div>
-          <div class="rv bp"><div class="lbl">血壓</div><div class="val">${r.bp}</div></div>
-          <div class="rv spo2"><div class="lbl">血氧</div><div class="val">${r.spo2}%</div></div>
+          <div class="rv">
+            <div class="lbl">心跳</div>
+            <div class="val${hrAbn?' abnormal':''}">${hr}</div>
+          </div>
+          <div class="rv">
+            <div class="lbl">血壓</div>
+            <div class="val${bpAbn?' abnormal':''}">${bp}</div>
+          </div>
+          <div class="rv">
+            <div class="lbl">血氧</div>
+            <div class="val${spo2Abn?' abnormal':''}">${spo2}%</div>
+          </div>
         </div>
-      </div>`).join('');
-  } catch(e) {
+      </div>`;
+    }).join('');
+  } catch(err) {
     list.innerHTML = '<p class="empty">讀取失敗，請確認網路</p>';
+    console.error(err);
   }
 }
 
@@ -586,50 +483,37 @@ async function submitRecord() {
   const st   = document.getElementById('status');
   st.className = 'status';
 
-  const dateStr = `${selDate.y}/${selDate.m+1}/${selDate.d}`;
-  const timeStr = `${fmt2(selHour)}:${fmt2(selMin)}`;
-  const dispDate = `${selDate.m+1}/${selDate.d}`;
-
   if (!selectedPosture) { st.className='status error'; st.textContent='⚠️ 請選擇測量姿勢！'; return; }
   if (!selectedHand)    { st.className='status error'; st.textContent='⚠️ 請選擇測量部位！'; return; }
   if (!hr||!sys||!dia||!spo2) { st.className='status error'; st.textContent='⚠️ 請填寫所有欄位！'; return; }
 
-  const bp      = `${sys}/${dia}`;
-  const posture = {lie:'躺',sit:'坐',stand:'站'}[selectedPosture];
-  const hand    = selectedHand==='left' ? '左手' : '右手';
+  const bp             = `${sys}/${dia}`;
+  const posture        = {lie:'躺',sit:'坐',stand:'站'}[selectedPosture];
+  const hand           = selectedHand==='left'?'左手':'右手';
+  const dateStr        = `${selDate.y}/${selDate.m+1}/${selDate.d}`;
+  const timeStr        = `${fmt2(selHour)}:${fmt2(selMin)}`;
   const uploadDateTime = `${dateStr} ${timeStr}`;
-  const payload = { uploadDateTime, date: dateStr, time: timeStr, posture, hand, hr, bp, spo2 };
-
-  records.push({ date: dispDate, time: timeStr, posture, hand, hr, bp, spo2 });
-  localStorage.setItem('bp_records', JSON.stringify(records));
-  renderRecords();
+  const payload        = { uploadDateTime, date: dateStr, time: timeStr, posture, hand, hr, bp, spo2 };
 
   ['hr','bp-sys','bp-dia','spo2'].forEach(id => document.getElementById(id).value='');
   selectedPosture=''; selectedHand='';
-  ['lie','sit','stand','left','right'].forEach(k => {
-    const el=document.getElementById('btn-'+k); if(el) el.classList.remove('selected');
-  });
+  ['lie','sit','stand','left','right'].forEach(k => { const el=document.getElementById('btn-'+k); if(el) el.classList.remove('selected'); });
 
   st.textContent = '⏳ 同步到 Google Sheet…';
   try {
-    await fetch(SCRIPT_URL, {
-      method:'POST', mode:'no-cors',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(payload)
-    });
+    await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
     st.textContent = '✅ 已儲存並同步到 Google Sheet！';
-  } catch(e) {
+  } catch(err) {
     st.className='status error';
-    st.textContent='⚠️ 本機已儲存，但 Google Sheet 同步失敗';
+    st.textContent='⚠️ 同步失敗，請重試';
   }
-  setTimeout(()=>{ st.textContent=''; fetchAndRenderRecords(); }, 3500);
+  setTimeout(() => { st.textContent=''; fetchAndRenderRecords(); }, 3000);
 }
 
 window.addEventListener('load', () => {
   updateDateDisp();
   updateTimeDisp();
   fetchAndRenderRecords();
-  // 每60秒自動刷新一次
   setInterval(fetchAndRenderRecords, 60000);
 });
 </script>
