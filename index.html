@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>高爸健康量測記錄</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: 'Noto Sans TC', sans-serif;
+    background: #F0EDE6;
+    min-height: 100vh;
+    padding: 16px;
+    padding-bottom: 48px;
+  }
+  h1 {
+    font-size: 32px;
+    font-weight: 700;
+    text-align: center;
+    color: #2C2C2A;
+    margin: 16px 0 24px;
+    letter-spacing: 3px;
+  }
+  .card {
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid #E0DDD5;
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .card-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #2C2C2A;
+    margin-bottom: 16px;
+    letter-spacing: 1px;
+  }
+
+  /* 左手右手選擇 */
+  .hand-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .hand-btn {
+    height: 72px;
+    font-size: 22px;
+    font-weight: 700;
+    border: 2.5px solid #D3D1C7;
+    border-radius: 14px;
+    background: #F9F8F5;
+    color: #888780;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'Noto Sans TC', sans-serif;
+    letter-spacing: 2px;
+  }
+  .hand-btn.selected {
+    background: #EEEDFE;
+    border-color: #3C3489;
+    color: #3C3489;
+  }
+  .hand-btn:active { transform: scale(0.97); }
+
+  /* 輸入欄位 */
+  .field { margin-bottom: 18px; }
+  .field:last-child { margin-bottom: 0; }
+  .field label {
+    display: block;
+    font-size: 20px;
+    font-weight: 700;
+    color: #2C2C2A;
+    margin-bottom: 8px;
+  }
+  .field input {
+    width: 100%;
+    height: 76px;
+    font-size: 38px;
+    font-weight: 700;
+    text-align: center;
+    border: 2px solid #D3D1C7;
+    border-radius: 12px;
+    color: #2C2C2A;
+    background: #F9F8F5;
+    padding: 0 12px;
+    outline: none;
+    transition: border-color 0.15s;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .field input::placeholder { color: #D3D1C7; font-weight: 400; }
+  .field input:focus { border-color: #3C3489; background: #fff; }
+  .field .hint {
+    font-size: 14px;
+    color: #B4B2A9;
+    text-align: right;
+    margin-top: 5px;
+  }
+
+  /* 血壓兩格並排 */
+  .bp-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .bp-row input {
+    width: 100%;
+    height: 76px;
+    font-size: 38px;
+    font-weight: 700;
+    text-align: center;
+    border: 2px solid #D3D1C7;
+    border-radius: 12px;
+    color: #2C2C2A;
+    background: #F9F8F5;
+    padding: 0 8px;
+    outline: none;
+    transition: border-color 0.15s;
+    -webkit-appearance: none;
+    appearance: none;
+    font-family: 'Noto Sans TC', sans-serif;
+  }
+  .bp-row input::placeholder { color: #D3D1C7; font-weight: 400; }
+  .bp-row input:focus { border-color: #3C3489; background: #fff; }
+  .bp-labels {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 5px;
+  }
+  .bp-labels span {
+    text-align: center;
+    font-size: 13px;
+    color: #B4B2A9;
+  }
+
+  /* 送出按鈕 */
+  .submit-btn {
+    width: 100%;
+    height: 72px;
+    font-size: 26px;
+    font-weight: 700;
+    background: #3C3489;
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    letter-spacing: 3px;
+    transition: opacity 0.15s, transform 0.1s;
+    font-family: 'Noto Sans TC', sans-serif;
+  }
+  .submit-btn:active { opacity: 0.85; transform: scale(0.98); }
+
+  .status {
+    text-align: center;
+    font-size: 18px;
+    font-weight: 500;
+    min-height: 30px;
+    margin: 12px 0 4px;
+    color: #3C3489;
+  }
+  .status.error { color: #A32D2D; }
+
+  /* 近期紀錄 */
+  .records-header {
+    font-size: 20px;
+    font-weight: 700;
+    color: #2C2C2A;
+    margin-bottom: 12px;
+  }
+  .record-item {
+    padding: 14px 0;
+    border-bottom: 1px solid #F1EFE8;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+  .record-item:last-child { border-bottom: none; }
+  .record-left { display: flex; flex-direction: column; gap: 3px; }
+  .record-time { font-size: 13px; color: #B4B2A9; }
+  .record-hand { font-size: 13px; color: #888780; font-weight: 500; }
+  .record-vals { display: flex; gap: 10px; }
+  .rv { text-align: center; min-width: 50px; }
+  .rv .lbl { font-size: 11px; color: #B4B2A9; margin-bottom: 2px; }
+  .rv .val { font-size: 15px; font-weight: 700; }
+  .rv.hr .val  { color: #993C1D; }
+  .rv.bp .val  { color: #3C3489; }
+  .rv.spo2 .val { color: #0F6E56; }
+  .empty { text-align: center; color: #B4B2A9; font-size: 16px; padding: 24px 0; }
+</style>
+</head>
+<body>
+
+<h1>🩺 健康量測記錄</h1>
+
+<!-- 輸入區 -->
+<div class="card">
+  <p class="card-title">📋 量測輸入</p>
+
+  <!-- 左手右手 -->
+  <div class="hand-row">
+    <button class="hand-btn" id="btn-left" onclick="selectHand('left')">左手</button>
+    <button class="hand-btn" id="btn-right" onclick="selectHand('right')">右手</button>
+  </div>
+
+  <!-- 心跳 -->
+  <div class="field">
+    <label>心跳</label>
+    <input type="number" inputmode="numeric" id="hr" min="30" max="220">
+    <p class="hint">次 / 分鐘</p>
+  </div>
+
+  <!-- 血壓（兩格）-->
+  <div class="field">
+    <label>血壓</label>
+    <div class="bp-row">
+      <input type="number" inputmode="numeric" id="bp-sys" min="60" max="250">
+      <input type="number" inputmode="numeric" id="bp-dia" min="40" max="150">
+    </div>
+    <div class="bp-labels">
+      <span>收縮壓（高壓）mmHg</span>
+      <span>舒張壓（低壓）mmHg</span>
+    </div>
+  </div>
+
+  <!-- 血氧 -->
+  <div class="field">
+    <label>血氧 SpO₂</label>
+    <input type="number" inputmode="numeric" id="spo2" min="70" max="100">
+    <p class="hint">%（正常值 95–100）</p>
+  </div>
+</div>
+
+<button class="submit-btn" onclick="submitRecord()">✅ 儲存記錄</button>
+<p class="status" id="status"></p>
+
+<!-- 近期紀錄 -->
+<div class="card">
+  <p class="records-header">📊 近期十筆紀錄</p>
+  <div id="records-list"><p class="empty">尚無記錄</p></div>
+</div>
+
+<script>
+// ── Apps Script 網址（部署後填入） ────────────────
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxZwnQjorYfj8xY7iOTO5naWbDDuHDBVfRDX38kATqkfhw73oIJiPi6iyO1sPLuecRPqA/exec';  // ← 填入你的 Apps Script 網址
+
+// ── 左右手選擇 ────────────────────────────────────
+let selectedHand = '';
+
+function selectHand(hand) {
+  selectedHand = hand;
+  document.getElementById('btn-left').classList.toggle('selected', hand === 'left');
+  document.getElementById('btn-right').classList.toggle('selected', hand === 'right');
+}
+
+// ── 本地記錄 ──────────────────────────────────────
+let records = JSON.parse(localStorage.getItem('bp_records') || '[]');
+
+function renderRecords() {
+  const list = document.getElementById('records-list');
+  if (!records.length) { list.innerHTML = '<p class="empty">尚無記錄</p>'; return; }
+  const recent = records.slice(-10).reverse();
+  list.innerHTML = recent.map(r => `
+    <div class="record-item">
+      <div class="record-left">
+        <div class="record-time">${r.time}</div>
+        <div class="record-hand">${r.hand}</div>
+      </div>
+      <div class="record-vals">
+        <div class="rv hr"><div class="lbl">心跳</div><div class="val">${r.hr}</div></div>
+        <div class="rv bp"><div class="lbl">血壓</div><div class="val">${r.bp}</div></div>
+        <div class="rv spo2"><div class="lbl">血氧</div><div class="val">${r.spo2}%</div></div>
+      </div>
+    </div>`).join('');
+}
+
+// ── 送出記錄 ──────────────────────────────────────
+async function submitRecord() {
+  const hr    = document.getElementById('hr').value.trim();
+  const sys   = document.getElementById('bp-sys').value.trim();
+  const dia   = document.getElementById('bp-dia').value.trim();
+  const spo2  = document.getElementById('spo2').value.trim();
+  const st    = document.getElementById('status');
+
+  st.className = 'status';
+
+  if (!selectedHand) {
+    st.className = 'status error';
+    st.textContent = '⚠️ 請選擇左手或右手！';
+    return;
+  }
+  if (!hr || !sys || !dia || !spo2) {
+    st.className = 'status error';
+    st.textContent = '⚠️ 請填寫所有欄位！';
+    return;
+  }
+
+  const bp   = `${sys}/${dia}`;
+  const hand = selectedHand === 'left' ? '左手' : '右手';
+
+  const now  = new Date();
+  const date = `${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()}`;
+  const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const displayTime = `${now.getMonth()+1}/${now.getDate()} ${time}`;
+
+  const payload = { date, time, hand, hr, bp, spo2 };
+
+  // 存本地
+  records.push({ time: displayTime, hand, hr, bp, spo2 });
+  localStorage.setItem('bp_records', JSON.stringify(records));
+  renderRecords();
+
+  // 清空欄位，重置選手
+  ['hr','bp-sys','bp-dia','spo2'].forEach(id => document.getElementById(id).value = '');
+  selectedHand = '';
+  document.getElementById('btn-left').classList.remove('selected');
+  document.getElementById('btn-right').classList.remove('selected');
+
+  // 送 Google Sheet
+  if (!SCRIPT_URL) {
+    st.textContent = '✅ 已儲存（未連線 Google Sheet）';
+    setTimeout(() => { st.textContent = ''; }, 3000);
+    return;
+  }
+
+  st.textContent = '⏳ 同步到 Google Sheet…';
+  try {
+    await fetch(SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    st.textContent = '✅ 已儲存並同步到 Google Sheet！';
+  } catch (e) {
+    st.className = 'status error';
+    st.textContent = '⚠️ 本機已儲存，但 Google Sheet 同步失敗';
+  }
+
+  setTimeout(() => { st.textContent = ''; }, 3500);
+}
+
+window.addEventListener('load', renderRecords);
+</script>
+</body>
+</html>
