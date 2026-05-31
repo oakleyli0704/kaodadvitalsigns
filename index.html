@@ -37,15 +37,18 @@
     margin-bottom: 16px;
     letter-spacing: 1px;
   }
-
-  /* 左手右手選擇 */
-  .hand-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 20px;
+  .select-label {
+    font-size: 20px;
+    font-weight: 700;
+    color: #2C2C2A;
+    margin-bottom: 10px;
   }
-  .hand-btn {
+
+  /* 選擇按鈕通用 */
+  .btn-group { display: grid; gap: 12px; margin-bottom: 20px; }
+  .btn-group.col2 { grid-template-columns: 1fr 1fr; }
+  .btn-group.col3 { grid-template-columns: 1fr 1fr 1fr; }
+  .sel-btn {
     height: 72px;
     font-size: 22px;
     font-weight: 700;
@@ -58,135 +61,186 @@
     font-family: 'Noto Sans TC', sans-serif;
     letter-spacing: 2px;
   }
-  .hand-btn.selected {
-    background: #EEEDFE;
-    border-color: #3C3489;
-    color: #3C3489;
+  .sel-btn.selected { background: #EEEDFE; border-color: #3C3489; color: #3C3489; }
+  .sel-btn:active { transform: scale(0.97); }
+
+  /* 日期時間顯示列 */
+  .datetime-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
   }
-  .hand-btn:active { transform: scale(0.97); }
+  .dt-box {
+    background: #F9F8F5;
+    border: 2px solid #D3D1C7;
+    border-radius: 12px;
+    padding: 12px 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .dt-box:active { border-color: #3C3489; }
+  .dt-box .dt-label { font-size: 13px; color: #B4B2A9; margin-bottom: 4px; }
+  .dt-box .dt-value { font-size: 22px; font-weight: 700; color: #2C2C2A; }
+
+  /* 遮罩 */
+  .overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 100;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .overlay.open { display: flex; }
+
+  /* 日曆 popup */
+  .cal-popup {
+    background: #fff;
+    border-radius: 20px 20px 0 0;
+    padding: 20px;
+    width: 100%;
+    max-width: 420px;
+  }
+  .cal-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .cal-nav button {
+    width: 44px; height: 44px;
+    font-size: 22px; font-weight: 700;
+    background: #F9F8F5; border: 1px solid #D3D1C7;
+    border-radius: 10px; cursor: pointer; color: #2C2C2A;
+  }
+  .cal-nav .cal-month { font-size: 20px; font-weight: 700; color: #2C2C2A; }
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    text-align: center;
+  }
+  .cal-grid .day-hdr { font-size: 13px; color: #B4B2A9; padding: 4px 0; }
+  .cal-grid .day-cell {
+    height: 42px; line-height: 42px;
+    font-size: 17px; font-weight: 500;
+    border-radius: 10px; cursor: pointer; color: #2C2C2A;
+  }
+  .cal-grid .day-cell:hover { background: #F1EFE8; }
+  .cal-grid .day-cell.today { color: #3C3489; font-weight: 700; }
+  .cal-grid .day-cell.selected-day { background: #3C3489; color: #fff !important; border-radius: 10px; }
+  .cal-grid .day-cell.other-month { color: #D3D1C7; }
+  .cal-grid .day-cell.empty { cursor: default; }
+  .cal-done {
+    margin-top: 16px; width: 100%; height: 56px;
+    font-size: 20px; font-weight: 700;
+    background: #3C3489; color: #fff;
+    border: none; border-radius: 12px; cursor: pointer;
+    font-family: 'Noto Sans TC', sans-serif;
+  }
+
+  /* 時間滾輪 popup */
+  .time-popup {
+    background: #fff;
+    border-radius: 20px 20px 0 0;
+    padding: 20px;
+    width: 100%;
+    max-width: 420px;
+  }
+  .time-popup-title { font-size: 20px; font-weight: 700; color: #2C2C2A; text-align: center; margin-bottom: 16px; }
+  .wheel-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .wheel-sep { font-size: 36px; font-weight: 700; color: #2C2C2A; line-height: 1; }
+  .wheel-col { position: relative; width: 90px; height: 180px; overflow: hidden; }
+  .wheel-col::before, .wheel-col::after {
+    content: '';
+    position: absolute; left: 0; right: 0; height: 60px; z-index: 2;
+    pointer-events: none;
+  }
+  .wheel-col::before { top: 0; background: linear-gradient(to bottom, rgba(255,255,255,0.95), transparent); }
+  .wheel-col::after  { bottom: 0; background: linear-gradient(to top, rgba(255,255,255,0.95), transparent); }
+  .wheel-highlight {
+    position: absolute; left: 0; right: 0;
+    top: 60px; height: 60px;
+    background: #EEEDFE; border-radius: 12px; z-index: 1;
+    pointer-events: none;
+  }
+  .wheel-list {
+    position: absolute; left: 0; right: 0;
+    transition: transform 0.2s cubic-bezier(.25,.8,.25,1);
+    z-index: 3;
+  }
+  .wheel-item {
+    height: 60px; line-height: 60px;
+    text-align: center;
+    font-size: 32px; font-weight: 700;
+    color: #B4B2A9;
+    user-select: none;
+  }
+  .wheel-item.active { color: #3C3489; }
+  .time-done {
+    margin-top: 16px; width: 100%; height: 56px;
+    font-size: 20px; font-weight: 700;
+    background: #3C3489; color: #fff;
+    border: none; border-radius: 12px; cursor: pointer;
+    font-family: 'Noto Sans TC', sans-serif;
+  }
 
   /* 輸入欄位 */
   .field { margin-bottom: 18px; }
   .field:last-child { margin-bottom: 0; }
-  .field label {
-    display: block;
-    font-size: 20px;
-    font-weight: 700;
-    color: #2C2C2A;
-    margin-bottom: 8px;
-  }
+  .field label { display: block; font-size: 20px; font-weight: 700; color: #2C2C2A; margin-bottom: 8px; }
   .field input {
-    width: 100%;
-    height: 76px;
-    font-size: 38px;
-    font-weight: 700;
-    text-align: center;
-    border: 2px solid #D3D1C7;
-    border-radius: 12px;
-    color: #2C2C2A;
-    background: #F9F8F5;
-    padding: 0 12px;
-    outline: none;
-    transition: border-color 0.15s;
-    -webkit-appearance: none;
-    appearance: none;
+    width: 100%; height: 76px; font-size: 38px; font-weight: 700;
+    text-align: center; border: 2px solid #D3D1C7; border-radius: 12px;
+    color: #2C2C2A; background: #F9F8F5; padding: 0 12px; outline: none;
+    transition: border-color 0.15s; -webkit-appearance: none; appearance: none;
   }
-  .field input::placeholder { color: #D3D1C7; font-weight: 400; }
   .field input:focus { border-color: #3C3489; background: #fff; }
-  .field .hint {
-    font-size: 14px;
-    color: #B4B2A9;
-    text-align: right;
-    margin-top: 5px;
-  }
-
-  /* 血壓兩格並排 */
-  .bp-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
+  .field .hint { font-size: 14px; color: #B4B2A9; text-align: right; margin-top: 5px; }
+  .bp-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .bp-row input {
-    width: 100%;
-    height: 76px;
-    font-size: 38px;
-    font-weight: 700;
-    text-align: center;
-    border: 2px solid #D3D1C7;
-    border-radius: 12px;
-    color: #2C2C2A;
-    background: #F9F8F5;
-    padding: 0 8px;
-    outline: none;
-    transition: border-color 0.15s;
-    -webkit-appearance: none;
-    appearance: none;
+    width: 100%; height: 76px; font-size: 38px; font-weight: 700;
+    text-align: center; border: 2px solid #D3D1C7; border-radius: 12px;
+    color: #2C2C2A; background: #F9F8F5; padding: 0 8px; outline: none;
+    transition: border-color 0.15s; -webkit-appearance: none; appearance: none;
     font-family: 'Noto Sans TC', sans-serif;
   }
-  .bp-row input::placeholder { color: #D3D1C7; font-weight: 400; }
   .bp-row input:focus { border-color: #3C3489; background: #fff; }
-  .bp-labels {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-top: 5px;
-  }
-  .bp-labels span {
-    text-align: center;
-    font-size: 13px;
-    color: #B4B2A9;
-  }
+  .bp-labels { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 5px; }
+  .bp-labels span { text-align: center; font-size: 13px; color: #B4B2A9; }
 
-  /* 送出按鈕 */
+  /* 送出 */
   .submit-btn {
-    width: 100%;
-    height: 72px;
-    font-size: 26px;
-    font-weight: 700;
-    background: #3C3489;
-    color: #fff;
-    border: none;
-    border-radius: 14px;
-    cursor: pointer;
-    letter-spacing: 3px;
-    transition: opacity 0.15s, transform 0.1s;
+    width: 100%; height: 72px; font-size: 26px; font-weight: 700;
+    background: #3C3489; color: #fff; border: none; border-radius: 14px;
+    cursor: pointer; letter-spacing: 3px; transition: opacity 0.15s, transform 0.1s;
     font-family: 'Noto Sans TC', sans-serif;
   }
   .submit-btn:active { opacity: 0.85; transform: scale(0.98); }
-
-  .status {
-    text-align: center;
-    font-size: 18px;
-    font-weight: 500;
-    min-height: 30px;
-    margin: 12px 0 4px;
-    color: #3C3489;
-  }
+  .status { text-align: center; font-size: 18px; font-weight: 500; min-height: 30px; margin: 12px 0 4px; color: #3C3489; }
   .status.error { color: #A32D2D; }
 
   /* 近期紀錄 */
-  .records-header {
-    font-size: 20px;
-    font-weight: 700;
-    color: #2C2C2A;
-    margin-bottom: 12px;
-  }
+  .records-header { font-size: 20px; font-weight: 700; color: #2C2C2A; margin-bottom: 12px; }
   .record-item {
-    padding: 14px 0;
-    border-bottom: 1px solid #F1EFE8;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 8px;
+    padding: 14px 0; border-bottom: 1px solid #F1EFE8;
+    display: flex; justify-content: space-between; align-items: center; gap: 8px;
   }
   .record-item:last-child { border-bottom: none; }
-  .record-left { display: flex; flex-direction: column; gap: 3px; }
-  .record-time { font-size: 13px; color: #B4B2A9; }
-  .record-hand { font-size: 13px; color: #888780; font-weight: 500; }
-  .record-vals { display: flex; gap: 10px; }
-  .rv { text-align: center; min-width: 50px; }
+  .record-left { display: flex; flex-direction: column; gap: 3px; min-width: 80px; }
+  .record-time { font-size: 12px; color: #B4B2A9; }
+  .record-meta { font-size: 12px; color: #888780; font-weight: 500; }
+  .record-vals { display: flex; gap: 8px; }
+  .rv { text-align: center; min-width: 48px; }
   .rv .lbl { font-size: 11px; color: #B4B2A9; margin-bottom: 2px; }
-  .rv .val { font-size: 15px; font-weight: 700; }
+  .rv .val { font-size: 14px; font-weight: 700; }
   .rv.hr .val  { color: #993C1D; }
   .rv.bp .val  { color: #3C3489; }
   .rv.spo2 .val { color: #0F6E56; }
@@ -197,14 +251,68 @@
 
 <h1>🩺 健康量測記錄</h1>
 
+<!-- 日曆 overlay -->
+<div class="overlay" id="cal-overlay" onclick="calOverlayClick(event)">
+  <div class="cal-popup" id="cal-popup">
+    <div class="cal-nav">
+      <button onclick="calPrev()">‹</button>
+      <span class="cal-month" id="cal-month-label"></span>
+      <button onclick="calNext()">›</button>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+    <button class="cal-done" onclick="closeCal()">確定</button>
+  </div>
+</div>
+
+<!-- 時間滾輪 overlay -->
+<div class="overlay" id="time-overlay" onclick="timeOverlayClick(event)">
+  <div class="time-popup" id="time-popup">
+    <p class="time-popup-title">選擇時間</p>
+    <div class="wheel-wrap">
+      <div class="wheel-col" id="wheel-hour">
+        <div class="wheel-highlight"></div>
+        <div class="wheel-list" id="wl-hour"></div>
+      </div>
+      <div class="wheel-sep">:</div>
+      <div class="wheel-col" id="wheel-min">
+        <div class="wheel-highlight"></div>
+        <div class="wheel-list" id="wl-min"></div>
+      </div>
+    </div>
+    <button class="time-done" onclick="closeTime()">確定</button>
+  </div>
+</div>
+
 <!-- 輸入區 -->
 <div class="card">
   <p class="card-title">📋 量測輸入</p>
 
-  <!-- 左手右手 -->
-  <div class="hand-row">
-    <button class="hand-btn" id="btn-left" onclick="selectHand('left')">左手</button>
-    <button class="hand-btn" id="btn-right" onclick="selectHand('right')">右手</button>
+  <!-- 日期時間 -->
+  <p class="select-label" style="margin-bottom:10px;">測量時間</p>
+  <div class="datetime-row">
+    <div class="dt-box" onclick="openCal()">
+      <div class="dt-label">日期</div>
+      <div class="dt-value" id="disp-date">—</div>
+    </div>
+    <div class="dt-box" onclick="openTime()">
+      <div class="dt-label">時間</div>
+      <div class="dt-value" id="disp-time">—</div>
+    </div>
+  </div>
+
+  <!-- 測量姿勢 -->
+  <p class="select-label">測量姿勢</p>
+  <div class="btn-group col3">
+    <button class="sel-btn" id="btn-lie"   onclick="selectPosture('lie')">躺</button>
+    <button class="sel-btn" id="btn-sit"   onclick="selectPosture('sit')">坐</button>
+    <button class="sel-btn" id="btn-stand" onclick="selectPosture('stand')">站</button>
+  </div>
+
+  <!-- 測量部位 -->
+  <p class="select-label">測量部位</p>
+  <div class="btn-group col2">
+    <button class="sel-btn" id="btn-left"  onclick="selectHand('left')">左手</button>
+    <button class="sel-btn" id="btn-right" onclick="selectHand('right')">右手</button>
   </div>
 
   <!-- 心跳 -->
@@ -214,7 +322,7 @@
     <p class="hint">次 / 分鐘</p>
   </div>
 
-  <!-- 血壓（兩格）-->
+  <!-- 血壓 -->
   <div class="field">
     <label>血壓</label>
     <div class="bp-row">
@@ -245,19 +353,120 @@
 </div>
 
 <script>
-// ── Apps Script 網址（部署後填入） ────────────────
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxZwnQjorYfj8xY7iOTO5naWbDDuHDBVfRDX38kATqkfhw73oIJiPi6iyO1sPLuecRPqA/exec';  // ← 填入你的 Apps Script 網址
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxZwnQjorYfj8xY7iOTO5naWbDDuHDBVfRDX38kATqkfhw73oIJiPi6iyO1sPLuecRPqA/exec';
 
-// ── 左右手選擇 ────────────────────────────────────
-let selectedHand = '';
+// ── 日期時間狀態 ─────────────────────────────────
+const now0 = new Date();
+let selDate = { y: now0.getFullYear(), m: now0.getMonth(), d: now0.getDate() };
+let selHour = now0.getHours();
+let selMin  = now0.getMinutes();
 
-function selectHand(hand) {
-  selectedHand = hand;
-  document.getElementById('btn-left').classList.toggle('selected', hand === 'left');
-  document.getElementById('btn-right').classList.toggle('selected', hand === 'right');
+function fmt2(n) { return String(n).padStart(2,'0'); }
+
+function updateDateDisp() {
+  document.getElementById('disp-date').textContent =
+    `${selDate.m+1}/${selDate.d}`;
+}
+function updateTimeDisp() {
+  document.getElementById('disp-time').textContent =
+    `${fmt2(selHour)}:${fmt2(selMin)}`;
 }
 
-// ── 本地記錄 ──────────────────────────────────────
+// ── 日曆 ─────────────────────────────────────────
+let calView = { y: selDate.y, m: selDate.m };
+const WD = ['日','一','二','三','四','五','六'];
+
+function buildCal() {
+  const label = document.getElementById('cal-month-label');
+  label.textContent = `${calView.y} 年 ${calView.m+1} 月`;
+  const grid = document.getElementById('cal-grid');
+  grid.innerHTML = WD.map(w => `<div class="day-hdr">${w}</div>`).join('');
+  const first = new Date(calView.y, calView.m, 1).getDay();
+  const days  = new Date(calView.y, calView.m+1, 0).getDate();
+  const today = new Date();
+  for (let i = 0; i < first; i++) grid.innerHTML += `<div class="day-cell empty"></div>`;
+  for (let d = 1; d <= days; d++) {
+    const isToday = d===today.getDate() && calView.m===today.getMonth() && calView.y===today.getFullYear();
+    const isSel   = d===selDate.d && calView.m===selDate.m && calView.y===selDate.y;
+    grid.innerHTML += `<div class="day-cell${isToday?' today':''}${isSel?' selected-day':''}" onclick="pickDay(${d})">${d}</div>`;
+  }
+}
+function calPrev() { calView.m--; if(calView.m<0){calView.m=11;calView.y--;} buildCal(); }
+function calNext() { calView.m++; if(calView.m>11){calView.m=0;calView.y++;} buildCal(); }
+function pickDay(d) { selDate={y:calView.y,m:calView.m,d}; buildCal(); }
+function openCal()  { calView={y:selDate.y,m:selDate.m}; buildCal(); document.getElementById('cal-overlay').classList.add('open'); }
+function closeCal() { document.getElementById('cal-overlay').classList.remove('open'); updateDateDisp(); }
+function calOverlayClick(e) { if(e.target===document.getElementById('cal-overlay')) closeCal(); }
+
+// ── 時間滾輪 ─────────────────────────────────────
+function buildWheel(listId, count, selected, pad) {
+  const el = document.getElementById(listId);
+  let html = '<div class="wheel-item"></div><div class="wheel-item"></div>';
+  for (let i = 0; i < count; i++)
+    html += `<div class="wheel-item${i===selected?' active':''}" data-val="${i}">${pad?fmt2(i):i}</div>`;
+  html += '<div class="wheel-item"></div><div class="wheel-item"></div>';
+  el.innerHTML = html;
+  setWheelPos(listId.replace('wl-','wheel-'), listId, selected);
+}
+
+function setWheelPos(colId, listId, idx) {
+  document.getElementById(listId).style.transform = `translateY(${-idx*60}px)`;
+}
+
+function wheelScroll(colId, listId, maxVal, isHour) {
+  const col  = document.getElementById(colId);
+  const list = document.getElementById(listId);
+  let startY, startIdx = isHour ? selHour : selMin;
+
+  col.addEventListener('touchstart', e => {
+    startY    = e.touches[0].clientY;
+    startIdx  = isHour ? selHour : selMin;
+  }, { passive: true });
+
+  col.addEventListener('touchmove', e => {
+    const dy   = startY - e.touches[0].clientY;
+    const step = Math.round(dy / 60);
+    let idx    = startIdx + step;
+    idx = Math.max(0, Math.min(maxVal-1, idx));
+    if (isHour) selHour = idx; else selMin = idx;
+    list.style.transform = `translateY(${-idx*60}px)`;
+    list.querySelectorAll('.wheel-item[data-val]').forEach(el => {
+      el.classList.toggle('active', Number(el.dataset.val)===idx);
+    });
+  }, { passive: true });
+
+  col.addEventListener('touchend', () => {});
+}
+
+function openTime() {
+  buildWheel('wl-hour', 24, selHour, true);
+  buildWheel('wl-min',  60, selMin,  true);
+  document.getElementById('time-overlay').classList.add('open');
+  wheelScroll('wheel-hour','wl-hour',24,true);
+  wheelScroll('wheel-min','wl-min',60,false);
+}
+function closeTime() {
+  document.getElementById('time-overlay').classList.remove('open');
+  updateTimeDisp();
+}
+function timeOverlayClick(e) { if(e.target===document.getElementById('time-overlay')) closeTime(); }
+
+// ── 姿勢 / 部位 ──────────────────────────────────
+let selectedPosture = '';
+let selectedHand    = '';
+
+function selectPosture(p) {
+  selectedPosture = p;
+  ['lie','sit','stand'].forEach(k =>
+    document.getElementById('btn-'+k).classList.toggle('selected', k===p));
+}
+function selectHand(h) {
+  selectedHand = h;
+  ['left','right'].forEach(k =>
+    document.getElementById('btn-'+k).classList.toggle('selected', k===h));
+}
+
+// ── 本地紀錄 ─────────────────────────────────────
 let records = JSON.parse(localStorage.getItem('bp_records') || '[]');
 
 function renderRecords() {
@@ -267,8 +476,8 @@ function renderRecords() {
   list.innerHTML = recent.map(r => `
     <div class="record-item">
       <div class="record-left">
-        <div class="record-time">${r.time}</div>
-        <div class="record-hand">${r.hand}</div>
+        <div class="record-time">${r.date} ${r.time}</div>
+        <div class="record-meta">${r.posture} ${r.hand}</div>
       </div>
       <div class="record-vals">
         <div class="rv hr"><div class="lbl">心跳</div><div class="val">${r.hr}</div></div>
@@ -278,73 +487,58 @@ function renderRecords() {
     </div>`).join('');
 }
 
-// ── 送出記錄 ──────────────────────────────────────
+// ── 送出 ─────────────────────────────────────────
 async function submitRecord() {
-  const hr    = document.getElementById('hr').value.trim();
-  const sys   = document.getElementById('bp-sys').value.trim();
-  const dia   = document.getElementById('bp-dia').value.trim();
-  const spo2  = document.getElementById('spo2').value.trim();
-  const st    = document.getElementById('status');
-
+  const hr   = document.getElementById('hr').value.trim();
+  const sys  = document.getElementById('bp-sys').value.trim();
+  const dia  = document.getElementById('bp-dia').value.trim();
+  const spo2 = document.getElementById('spo2').value.trim();
+  const st   = document.getElementById('status');
   st.className = 'status';
 
-  if (!selectedHand) {
-    st.className = 'status error';
-    st.textContent = '⚠️ 請選擇左手或右手！';
-    return;
-  }
-  if (!hr || !sys || !dia || !spo2) {
-    st.className = 'status error';
-    st.textContent = '⚠️ 請填寫所有欄位！';
-    return;
-  }
+  const dateStr = `${selDate.y}/${selDate.m+1}/${selDate.d}`;
+  const timeStr = `${fmt2(selHour)}:${fmt2(selMin)}`;
+  const dispDate = `${selDate.m+1}/${selDate.d}`;
 
-  const bp   = `${sys}/${dia}`;
-  const hand = selectedHand === 'left' ? '左手' : '右手';
+  if (!selectedPosture) { st.className='status error'; st.textContent='⚠️ 請選擇測量姿勢！'; return; }
+  if (!selectedHand)    { st.className='status error'; st.textContent='⚠️ 請選擇測量部位！'; return; }
+  if (!hr||!sys||!dia||!spo2) { st.className='status error'; st.textContent='⚠️ 請填寫所有欄位！'; return; }
 
-  const now  = new Date();
-  const date = `${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()}`;
-  const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-  const displayTime = `${now.getMonth()+1}/${now.getDate()} ${time}`;
+  const bp      = `${sys}/${dia}`;
+  const posture = {lie:'躺',sit:'坐',stand:'站'}[selectedPosture];
+  const hand    = selectedHand==='left' ? '左手' : '右手';
+  const payload = { date: dateStr, time: timeStr, posture, hand, hr, bp, spo2 };
 
-  const payload = { date, time, hand, hr, bp, spo2 };
-
-  // 存本地
-  records.push({ time: displayTime, hand, hr, bp, spo2 });
+  records.push({ date: dispDate, time: timeStr, posture, hand, hr, bp, spo2 });
   localStorage.setItem('bp_records', JSON.stringify(records));
   renderRecords();
 
-  // 清空欄位，重置選手
-  ['hr','bp-sys','bp-dia','spo2'].forEach(id => document.getElementById(id).value = '');
-  selectedHand = '';
-  document.getElementById('btn-left').classList.remove('selected');
-  document.getElementById('btn-right').classList.remove('selected');
-
-  // 送 Google Sheet
-  if (!SCRIPT_URL) {
-    st.textContent = '✅ 已儲存（未連線 Google Sheet）';
-    setTimeout(() => { st.textContent = ''; }, 3000);
-    return;
-  }
+  ['hr','bp-sys','bp-dia','spo2'].forEach(id => document.getElementById(id).value='');
+  selectedPosture=''; selectedHand='';
+  ['lie','sit','stand','left','right'].forEach(k => {
+    const el=document.getElementById('btn-'+k); if(el) el.classList.remove('selected');
+  });
 
   st.textContent = '⏳ 同步到 Google Sheet…';
   try {
     await fetch(SCRIPT_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
       body: JSON.stringify(payload)
     });
     st.textContent = '✅ 已儲存並同步到 Google Sheet！';
-  } catch (e) {
-    st.className = 'status error';
-    st.textContent = '⚠️ 本機已儲存，但 Google Sheet 同步失敗';
+  } catch(e) {
+    st.className='status error';
+    st.textContent='⚠️ 本機已儲存，但 Google Sheet 同步失敗';
   }
-
-  setTimeout(() => { st.textContent = ''; }, 3500);
+  setTimeout(()=>{ st.textContent=''; }, 3500);
 }
 
-window.addEventListener('load', renderRecords);
+window.addEventListener('load', () => {
+  updateDateDisp();
+  updateTimeDisp();
+  renderRecords();
+});
 </script>
 </body>
 </html>
