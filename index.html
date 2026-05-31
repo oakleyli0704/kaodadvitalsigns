@@ -435,7 +435,7 @@ async function fetchAndRenderRecords() {
     }
     list.innerHTML = json.records.map(r => {
       // 時間顯示：uploadDate 欄位是 A欄 "2026/5/31 09:51" 格式的字串
-      const dateTime = r.uploadDate || '';
+      const dateTime = r.modifyTime || '';
       const posture  = r.posture || '';
       const hand     = r.hand    || '';
       const hr       = r.hr   !== undefined ? r.hr   : '—';
