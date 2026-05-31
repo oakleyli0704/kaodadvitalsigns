@@ -410,7 +410,8 @@ function buildWheel(listId, count, selected, pad) {
 }
 
 function setWheelPos(colId, listId, idx) {
-  document.getElementById(listId).style.transform = `translateY(${-idx*60}px)`;
+  // +2 補償開頭的兩個空白 padding item，讓選中項對準中間 highlight
+  document.getElementById(listId).style.transform = `translateY(${-(idx - 2) * 60}px)`;
 }
 
 function wheelScroll(colId, listId, maxVal, isHour) {
@@ -429,7 +430,7 @@ function wheelScroll(colId, listId, maxVal, isHour) {
     let idx    = startIdx + step;
     idx = Math.max(0, Math.min(maxVal-1, idx));
     if (isHour) selHour = idx; else selMin = idx;
-    list.style.transform = `translateY(${-idx*60}px)`;
+    list.style.transform = `translateY(${-(idx - 2) * 60}px)`;
     list.querySelectorAll('.wheel-item[data-val]').forEach(el => {
       el.classList.toggle('active', Number(el.dataset.val)===idx);
     });
