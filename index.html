@@ -410,33 +410,50 @@ function buildWheel(listId, count, selected, pad) {
 }
 
 function setWheelPos(colId, listId, idx) {
-  // +2 補償開頭的兩個空白 padding item，讓選中項對準中間 highlight
+  // +2 補償開頭兩個空白 padding，讓選中項對準中間 highlight
   document.getElementById(listId).style.transform = `translateY(${-(idx - 2) * 60}px)`;
 }
 
 function wheelScroll(colId, listId, maxVal, isHour) {
   const col  = document.getElementById(colId);
   const list = document.getElementById(listId);
-  let startY, startIdx = isHour ? selHour : selMin;
+  let startY, startIdx, dragging = false;
 
   col.addEventListener('touchstart', e => {
-    startY    = e.touches[0].clientY;
-    startIdx  = isHour ? selHour : selMin;
-  }, { passive: true });
+    e.stopPropagation();
+    startY   = e.touches[0].clientY;
+    startIdx = isHour ? selHour : selMin;
+    dragging = true;
+    list.style.transition = 'none';
+  }, { passive: false });
 
   col.addEventListener('touchmove', e => {
-    const dy   = startY - e.touches[0].clientY;
-    const step = Math.round(dy / 60);
-    let idx    = startIdx + step;
-    idx = Math.max(0, Math.min(maxVal-1, idx));
+    if (!dragging) return;
+    e.preventDefault();    // ★ 阻止頁面跟著捲動
+    e.stopPropagation();
+    const dy       = startY - e.touches[0].clientY;
+    const floatIdx = startIdx + dy / 60;
+    const idx      = Math.max(0, Math.min(maxVal - 1, Math.round(floatIdx)));
+    const clampF   = Math.max(0, Math.min(maxVal - 1, floatIdx));
     if (isHour) selHour = idx; else selMin = idx;
-    list.style.transform = `translateY(${-(idx - 2) * 60}px)`;
+    // 跟手即時移動（用 floatIdx 讓畫面更滑順）
+    list.style.transform = `translateY(${-(clampF - 2) * 60}px)`;
     list.querySelectorAll('.wheel-item[data-val]').forEach(el => {
-      el.classList.toggle('active', Number(el.dataset.val)===idx);
+      el.classList.toggle('active', Number(el.dataset.val) === idx);
     });
-  }, { passive: true });
+  }, { passive: false });
 
-  col.addEventListener('touchend', () => {});
+  col.addEventListener('touchend', () => {
+    if (!dragging) return;
+    dragging = false;
+    // 放手後 snap 回整數格，加緩動動畫
+    const idx = isHour ? selHour : selMin;
+    list.style.transition = 'transform 0.2s cubic-bezier(.25,.8,.25,1)';
+    list.style.transform  = `translateY(${-(idx - 2) * 60}px)`;
+    list.querySelectorAll('.wheel-item[data-val]').forEach(el => {
+      el.classList.toggle('active', Number(el.dataset.val) === idx);
+    });
+  }, { passive: false });
 }
 
 function openTime() {
