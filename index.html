@@ -55,24 +55,11 @@
   .wheel-wrap { display: flex; align-items: center; justify-content: center; gap: 4px; }
   .wheel-sep { font-size: 40px; font-weight: 700; color: #2C2C2A; line-height: 1; padding: 0 4px; }
 
-  /* 滾輪：5格可見，正中央第3格為 highlight */
-  .wheel-col {
-    position: relative;
-    width: 96px;
-    height: 360px; /* 5 × 72px */
-    overflow: hidden;
-    cursor: grab;
-    touch-action: none;
-  }
-  /* 漸層遮罩：上下各 2 格 */
-  .wheel-col::before, .wheel-col::after {
-    content: ''; position: absolute; left: 0; right: 0; height: 144px; /* 2 × 72px */
-    z-index: 2; pointer-events: none;
-  }
-  .wheel-col::before { top: 0;    background: linear-gradient(to bottom, rgba(255,255,255,0.97) 0%, rgba(255,255,255,0.5) 70%, transparent 100%); }
-  .wheel-col::after  { bottom: 0; background: linear-gradient(to top,   rgba(255,255,255,0.97) 0%, rgba(255,255,255,0.5) 70%, transparent 100%); }
-
-  /* highlight 在正中央第3格 */
+  /* 滾輪 */
+  .wheel-col { position: relative; width: 96px; height: 360px; overflow: hidden; cursor: grab; touch-action: none; }
+  .wheel-col::before, .wheel-col::after { content: ''; position: absolute; left: 0; right: 0; height: 144px; z-index: 2; pointer-events: none; }
+  .wheel-col::before { top: 0; background: linear-gradient(to bottom, rgba(255,255,255,0.97) 0%, rgba(255,255,255,0.5) 70%, transparent 100%); }
+  .wheel-col::after  { bottom: 0; background: linear-gradient(to top, rgba(255,255,255,0.97) 0%, rgba(255,255,255,0.5) 70%, transparent 100%); }
   .wheel-highlight { position: absolute; left: 4px; right: 4px; top: 144px; height: 72px; background: #EEEDFE; border-radius: 14px; z-index: 1; pointer-events: none; }
   .wheel-list { position: absolute; left: 0; right: 0; top: 0; will-change: transform; z-index: 3; }
   .wheel-item { height: 72px; line-height: 72px; text-align: center; font-size: 36px; font-weight: 700; color: #C0BDBA; user-select: none; touch-action: none; }
@@ -137,8 +124,18 @@
   .empty { text-align: center; color: #B4B2A9; font-size: 16px; padding: 24px 0; }
 
   /* 趨勢圖區域 */
-  .chart-wrapper { position: relative; height: 200px; width: 100%; margin-bottom: 24px; }
-  .chart-wrapper:last-child { margin-bottom: 0; }
+  .chart-wrapper { 
+    position: relative; height: 200px; width: 100%; margin-bottom: 24px; 
+    overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; 
+    scroll-behavior: smooth;
+  }
+  .chart-wrapper::-webkit-scrollbar { height: 6px; }
+  .chart-wrapper::-webkit-scrollbar-track { background: #F1EFE8; border-radius: 10px; }
+  .chart-wrapper::-webkit-scrollbar-thumb { background: #D3D1C7; border-radius: 10px; }
+  .chart-inner {
+    position: relative; height: 100%;
+    min-width: 700px; 
+  }
   .chart-title { font-size: 16px; font-weight: 700; color: #3C3489; margin-bottom: 8px; text-align: center; }
   .chart-divider { border-bottom: 1px dashed #E0DDD5; margin: 16px 0; }
 </style>
@@ -248,43 +245,60 @@
 <!-- 近期紀錄列表 -->
 <div class="card">
   <div class="records-header">
-    📊 近期二十筆紀錄
+    <div>📊 近期二十筆紀錄</div>
     <button class="refresh-btn" onclick="fetchAndRenderRecords()">↻ 刷新</button>
   </div>
   <div id="records-list"><p class="empty">載入中…</p></div>
 </div>
 
-<!-- 新增：近期趨勢圖區域 -->
+<!-- 近期趨勢圖區域 (加入雙向切換按鈕) -->
 <div class="card" id="charts-card" style="display: none;">
-  <div class="records-header">📈 近期趨勢圖</div>
+  <div class="records-header">
+    <div>📈 近期趨勢圖 <span style="font-size:13px; color:#B4B2A9; font-weight:normal;">(左右滑動)</span></div>
+    <button id="chart-sort-btn" class="refresh-btn" onclick="toggleChartSort()">⇄ 舊排至新</button>
+  </div>
   
   <div class="chart-title">❤️ 心跳趨勢 (bpm)</div>
   <div class="chart-wrapper">
-    <canvas id="hrChart"></canvas>
+    <div class="chart-inner"><canvas id="hrChart"></canvas></div>
   </div>
   
   <div class="chart-divider"></div>
   
   <div class="chart-title">🩸 血壓趨勢 (mmHg)</div>
   <div class="chart-wrapper" style="height: 220px;">
-    <canvas id="bpChart"></canvas>
+    <div class="chart-inner"><canvas id="bpChart"></canvas></div>
   </div>
   
   <div class="chart-divider"></div>
   
   <div class="chart-title">💨 血氧趨勢 (%)</div>
   <div class="chart-wrapper">
-    <canvas id="spo2Chart"></canvas>
+    <div class="chart-inner"><canvas id="spo2Chart"></canvas></div>
   </div>
 </div>
 
 <script>
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxZwnQjorYfj8xY7iOTO5naWbDDuHDBVfRDX38kATqkfhw73oIJiPi6iyO1sPLuecRPqA/exec';
 
-// ── 趨勢圖全域變數 ─────────────────────────────────
+// ── 趨勢圖全域變數與資料快取 ───────────────────────
 let hrChartInst = null;
 let bpChartInst = null;
 let spo2ChartInst = null;
+
+let chartSortAsc = true; // true = 舊排至新 (最新在右), false = 新排至舊 (最新在左)
+let currentChartRecords = []; // 暫存伺服器回傳的20筆資料，切換排序時不需重抓
+
+// ── 排序切換功能 ──────────────────────────────────
+function toggleChartSort() {
+  chartSortAsc = !chartSortAsc;
+  const btn = document.getElementById('chart-sort-btn');
+  btn.textContent = chartSortAsc ? '⇄ 舊排至新' : '⇄ 新排至舊';
+  
+  if (currentChartRecords && currentChartRecords.length > 0) {
+    renderCharts(currentChartRecords); // 直接用快取資料重繪
+  }
+}
 
 // ── 日期時間狀態 ──────────────────────────────────
 const now0 = new Date();
@@ -476,6 +490,9 @@ async function fetchAndRenderRecords() {
       return;
     }
     
+    // 更新快取，給切換按鈕使用
+    currentChartRecords = json.records;
+    
     // 渲染列表
     list.innerHTML = json.records.map(r => {
       const dateTime = r.modifyTime || '';
@@ -509,7 +526,7 @@ async function fetchAndRenderRecords() {
 
     // 渲染趨勢圖
     document.getElementById('charts-card').style.display = 'block';
-    renderCharts(json.records);
+    renderCharts(currentChartRecords);
 
   } catch(err) {
     list.innerHTML = '<p class="empty">讀取失敗，請確認網路</p>';
@@ -517,9 +534,11 @@ async function fetchAndRenderRecords() {
   }
 }
 
-// ── 繪製趨勢圖邏輯 (強制重建畫布版) ─────────────────────────
+// ── 繪製趨勢圖邏輯 (支援雙向切換) ─────────────────────────
 function renderCharts(records) {
-  const chartData = [...records].reverse();
+  // 依照全域變數 chartSortAsc 決定陣列方向
+  // 原始 records 是最新的在最前面 (index 0)
+  const chartData = chartSortAsc ? [...records].reverse() : [...records];
 
   const labels = chartData.map(r => {
     let dt = r.modifyTime || '';
@@ -544,22 +563,35 @@ function renderCharts(records) {
     return (parts[1] && parts[1] !== '?') ? Number(parts[1]) : null;
   });
 
-  const commonOptions = {
-    responsive: true, maintainAspectRatio: false, spanGaps: true,
-    plugins: { legend: { display: false } },
-    scales: { x: { ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } }, grid: { display: false } } },
-    elements: { line: { tension: 0.3, borderWidth: 2 }, point: { radius: 3, hitRadius: 10 } }
+  // UX 魔法：動態計算「最新一筆資料」所在的 Index 進行放大
+  const newestIndex = chartSortAsc ? chartData.length - 1 : 0;
+  
+  const customPointRadius = (ctx) => {
+    return ctx.dataIndex === newestIndex ? 7 : 3;
+  };
+  const customPointColor = (ctx) => {
+    return ctx.dataIndex === newestIndex ? ctx.dataset.borderColor : '#fff';
   };
 
-  // 強制清除畫布的內部函數 (解決手機瀏覽器殘影或不更新的問題)
+  const commonOptions = {
+    responsive: true, maintainAspectRatio: false, spanGaps: true,
+    layout: { padding: { right: 15, left: 15, top: 10 } }, 
+    plugins: { legend: { display: false } },
+    scales: { x: { ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } }, grid: { display: false } } },
+    elements: { 
+      line: { tension: 0.3, borderWidth: 2 }, 
+      point: { radius: customPointRadius, backgroundColor: customPointColor, borderWidth: 2, hitRadius: 10 } 
+    }
+  };
+
   function resetCanvas(canvasId) {
     const oldCanvas = document.getElementById(canvasId);
     if (!oldCanvas) return;
-    const parent = oldCanvas.parentElement;
-    oldCanvas.remove(); // 直接刪除舊畫布
+    const parent = oldCanvas.parentElement; 
+    oldCanvas.remove(); 
     const newCanvas = document.createElement('canvas');
     newCanvas.id = canvasId;
-    parent.appendChild(newCanvas); // 塞入全新畫布
+    parent.appendChild(newCanvas); 
   }
 
   // 1. 重建並繪製心跳圖
@@ -575,7 +607,9 @@ function renderCharts(records) {
   if (bpChartInst) bpChartInst.destroy();
   resetCanvas('bpChart');
   const bpOptions = JSON.parse(JSON.stringify(commonOptions));
+  bpOptions.elements.point = { radius: customPointRadius, backgroundColor: customPointColor, borderWidth: 2, hitRadius: 10 };
   bpOptions.plugins.legend = { display: true, position: 'top', labels: { boxWidth: 12, font:{size: 11} } };
+  
   bpChartInst = new Chart(document.getElementById('bpChart'), {
     type: 'line',
     data: {
@@ -591,11 +625,22 @@ function renderCharts(records) {
   // 3. 重建並繪製血氧圖
   if (spo2ChartInst) spo2ChartInst.destroy();
   resetCanvas('spo2Chart');
+  const spo2Options = JSON.parse(JSON.stringify(commonOptions));
+  spo2Options.elements.point = { radius: customPointRadius, backgroundColor: customPointColor, borderWidth: 2, hitRadius: 10 };
+  spo2Options.scales.y = { suggestedMin: 90, suggestedMax: 100 };
+  
   spo2ChartInst = new Chart(document.getElementById('spo2Chart'), {
     type: 'line',
     data: { labels: labels, datasets: [{ label: '血氧 SpO2', data: spo2Data, borderColor: '#1ABC9C', backgroundColor: '#1ABC9C' }] },
-    options: { ...commonOptions, scales: { x: commonOptions.scales.x, y: { suggestedMin: 90, suggestedMax: 100 } } }
+    options: spo2Options
   });
+
+  // 等待圖表畫完後，依照排序方向決定滑動區塊要捲到最右邊還是最左邊
+  setTimeout(() => {
+    document.querySelectorAll('.chart-wrapper').forEach(w => {
+      w.scrollLeft = chartSortAsc ? w.scrollWidth : 0;
+    });
+  }, 100);
 }
 
 // ── 送出 ─────────────────────────────────────────
@@ -634,7 +679,6 @@ async function submitRecord() {
     st.className='status error'; st.textContent='⚠️ 同步失敗，請重試';
   }
   
-  // 將等待時間拉長到 5 秒，確保 Google Sheet 已經確實存好資料再重繪
   setTimeout(() => { 
     st.textContent=''; 
     fetchAndRenderRecords(); 
