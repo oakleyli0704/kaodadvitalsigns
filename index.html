@@ -301,7 +301,6 @@ function setRemark(text) {
   const ta = document.getElementById('remark');
   const noBtn  = document.getElementById('rbtn-no');
   const yesBtn = document.getElementById('rbtn-yes');
-  // 同一個再按一次 → 取消
   if (ta.value === text) {
     ta.value = '';
     noBtn.classList.remove('selected');
@@ -312,7 +311,6 @@ function setRemark(text) {
   noBtn.classList.toggle('selected',  text === '非用氧');
   yesBtn.classList.toggle('selected', text === '用氧');
 }
-// 手動輸入時取消快速按鈕 highlight
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('remark').addEventListener('input', () => {
     document.getElementById('rbtn-no').classList.remove('selected');
@@ -352,8 +350,7 @@ function closeCal() { document.getElementById('cal-overlay').classList.remove('o
 function calOverlayClick(e) { if(e.target===document.getElementById('cal-overlay')) closeCal(); }
 
 // ── 時間滾輪 ─────────────────────────────────────
-const IH = 72; // item 高度，必須與 CSS 一致
-
+const IH = 72;
 function idxToY(idx) { return -(idx * IH); }
 
 function buildWheel(listId, count, selected, maxAllowed) {
@@ -520,115 +517,84 @@ async function fetchAndRenderRecords() {
   }
 }
 
-// ── 繪製趨勢圖邏輯 ────────────────────────────────
+// ── 繪製趨勢圖邏輯 (強制重建畫布版) ─────────────────────────
 function renderCharts(records) {
-  // 將資料反轉，讓最舊的在左邊，最新的在右邊
   const chartData = [...records].reverse();
 
-  // 處理 X 軸標籤 (將過長的日期時間縮短，如 2023/10/05 14:30 變成 10/05 14:30)
   const labels = chartData.map(r => {
     let dt = r.modifyTime || '';
     if (dt.includes(' ')) {
       let parts = dt.split(' ');
       let dateParts = parts[0].split('/');
-      if (dateParts.length >= 2) {
-        return `${dateParts.slice(-2).join('/')} ${parts[1]}`;
-      }
+      if (dateParts.length >= 2) return `${dateParts.slice(-2).join('/')} ${parts[1]}`;
     }
     return dt;
   });
 
-  // 處理數值 (空值轉 null，讓折線圖會斷開而不會掉到 0)
   const hrData = chartData.map(r => (r.hr && r.hr !== '—') ? Number(r.hr) : null);
   const spo2Data = chartData.map(r => (r.spo2 && r.spo2 !== '—') ? Number(r.spo2) : null);
-  
   const sysData = chartData.map(r => {
     if (!r.bp || r.bp === '—') return null;
     const parts = r.bp.split('/');
     return (parts[0] && parts[0] !== '?') ? Number(parts[0]) : null;
   });
-  
   const diaData = chartData.map(r => {
     if (!r.bp || r.bp === '—') return null;
     const parts = r.bp.split('/');
     return (parts[1] && parts[1] !== '?') ? Number(parts[1]) : null;
   });
 
-  // 通用圖表設定
   const commonOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    spanGaps: true, // 忽略 null 值，將兩端連起來
-    plugins: {
-      legend: { display: false }
-    },
-    scales: {
-      x: { 
-        ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } },
-        grid: { display: false }
-      }
-    },
-    elements: {
-      line: { tension: 0.3, borderWidth: 2 },
-      point: { radius: 3, hitRadius: 10 }
-    }
+    responsive: true, maintainAspectRatio: false, spanGaps: true,
+    plugins: { legend: { display: false } },
+    scales: { x: { ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } }, grid: { display: false } } },
+    elements: { line: { tension: 0.3, borderWidth: 2 }, point: { radius: 3, hitRadius: 10 } }
   };
 
-  // 1. 繪製心跳圖
+  // 強制清除畫布的內部函數 (解決手機瀏覽器殘影或不更新的問題)
+  function resetCanvas(canvasId) {
+    const oldCanvas = document.getElementById(canvasId);
+    if (!oldCanvas) return;
+    const parent = oldCanvas.parentElement;
+    oldCanvas.remove(); // 直接刪除舊畫布
+    const newCanvas = document.createElement('canvas');
+    newCanvas.id = canvasId;
+    parent.appendChild(newCanvas); // 塞入全新畫布
+  }
+
+  // 1. 重建並繪製心跳圖
   if (hrChartInst) hrChartInst.destroy();
+  resetCanvas('hrChart');
   hrChartInst = new Chart(document.getElementById('hrChart'), {
     type: 'line',
-    data: {
-      labels: labels,
-      datasets: [{
-        label: '心跳', data: hrData, 
-        borderColor: '#E74C3C', backgroundColor: '#E74C3C'
-      }]
-    },
+    data: { labels: labels, datasets: [{ label: '心跳', data: hrData, borderColor: '#E74C3C', backgroundColor: '#E74C3C' }] },
     options: commonOptions
   });
 
-  // 2. 繪製血壓圖 (雙折線)
+  // 2. 重建並繪製血壓圖
   if (bpChartInst) bpChartInst.destroy();
-  const bpOptions = JSON.parse(JSON.stringify(commonOptions)); // 複製設定
-  bpOptions.plugins.legend = { display: true, position: 'top', labels: { boxWidth: 12, font:{size: 11} } }; // 顯示圖例
-  
+  resetCanvas('bpChart');
+  const bpOptions = JSON.parse(JSON.stringify(commonOptions));
+  bpOptions.plugins.legend = { display: true, position: 'top', labels: { boxWidth: 12, font:{size: 11} } };
   bpChartInst = new Chart(document.getElementById('bpChart'), {
     type: 'line',
     data: {
       labels: labels,
       datasets: [
-        {
-          label: '收縮壓(高)', data: sysData, 
-          borderColor: '#3C3489', backgroundColor: '#3C3489'
-        },
-        {
-          label: '舒張壓(低)', data: diaData, 
-          borderColor: '#8CA5D3', backgroundColor: '#8CA5D3'
-        }
+        { label: '收縮壓(高)', data: sysData, borderColor: '#3C3489', backgroundColor: '#3C3489' },
+        { label: '舒張壓(低)', data: diaData, borderColor: '#8CA5D3', backgroundColor: '#8CA5D3' }
       ]
     },
     options: bpOptions
   });
 
-  // 3. 繪製血氧圖
+  // 3. 重建並繪製血氧圖
   if (spo2ChartInst) spo2ChartInst.destroy();
+  resetCanvas('spo2Chart');
   spo2ChartInst = new Chart(document.getElementById('spo2Chart'), {
     type: 'line',
-    data: {
-      labels: labels,
-      datasets: [{
-        label: '血氧 SpO2', data: spo2Data, 
-        borderColor: '#1ABC9C', backgroundColor: '#1ABC9C'
-      }]
-    },
-    options: {
-      ...commonOptions,
-      scales: {
-        x: commonOptions.scales.x,
-        y: { suggestedMin: 90, suggestedMax: 100 } // 血氧通常在 90-100 之間
-      }
-    }
+    data: { labels: labels, datasets: [{ label: '血氧 SpO2', data: spo2Data, borderColor: '#1ABC9C', backgroundColor: '#1ABC9C' }] },
+    options: { ...commonOptions, scales: { x: commonOptions.scales.x, y: { suggestedMin: 90, suggestedMax: 100 } } }
   });
 }
 
@@ -642,7 +608,6 @@ async function submitRecord() {
   const st     = document.getElementById('status');
   st.className = 'status';
 
-  // 全部非必填，但至少要有一個數值才送
   if (!hr && !sys && !dia && !spo2) {
     st.className='status error'; st.textContent='⚠️ 請至少填寫一項量測數值！'; return;
   }
@@ -655,29 +620,31 @@ async function submitRecord() {
   const uploadDateTime = `${dateStr} ${timeStr}`;
   const payload        = { uploadDateTime, date: dateStr, time: timeStr, posture, hand, hr, bp, spo2, remark };
 
-  // 清空表單
   ['hr','bp-sys','bp-dia','spo2','remark'].forEach(id => document.getElementById(id).value='');
   selectedPosture=''; selectedHand='';
   ['lie','sit','stand','left','right'].forEach(k => { const el=document.getElementById('btn-'+k); if(el) el.classList.remove('selected'); });
   document.getElementById('rbtn-no').classList.remove('selected');
   document.getElementById('rbtn-yes').classList.remove('selected');
 
-  st.textContent = '⏳ 同步到 Google Sheet…';
+  st.textContent = '⏳ 正在寫入 Google Sheet，請稍候…';
   try {
     await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
-    st.textContent = '✅ 已儲存並同步到 Google Sheet！';
+    st.textContent = '✅ 已寫入！正在讀取最新圖表資料…';
   } catch(err) {
     st.className='status error'; st.textContent='⚠️ 同步失敗，請重試';
   }
-  // 儲存後更新一次
-  setTimeout(() => { st.textContent=''; fetchAndRenderRecords(); }, 3000);
+  
+  // 將等待時間拉長到 5 秒，確保 Google Sheet 已經確實存好資料再重繪
+  setTimeout(() => { 
+    st.textContent=''; 
+    fetchAndRenderRecords(); 
+  }, 5000);
 }
 
 window.addEventListener('load', () => {
   updateDateDisp();
   updateTimeDisp();
   fetchAndRenderRecords();
-  // 半小時自動刷新
   setInterval(fetchAndRenderRecords, 30 * 60 * 1000);
 });
 </script>
