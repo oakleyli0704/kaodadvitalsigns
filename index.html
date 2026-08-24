@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>高爸健康量測記錄</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<!-- 引入 Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   body { font-family: 'Noto Sans TC', sans-serif; background: #F0EDE6; min-height: 100vh; padding: 16px; padding-bottom: 48px; }
@@ -133,6 +135,12 @@
   .rv .val { font-size: 17px; font-weight: 700; color: #3C3489; }
   .rv .val.abnormal { color: #D0021B; }
   .empty { text-align: center; color: #B4B2A9; font-size: 16px; padding: 24px 0; }
+
+  /* 趨勢圖區域 */
+  .chart-wrapper { position: relative; height: 200px; width: 100%; margin-bottom: 24px; }
+  .chart-wrapper:last-child { margin-bottom: 0; }
+  .chart-title { font-size: 16px; font-weight: 700; color: #3C3489; margin-bottom: 8px; text-align: center; }
+  .chart-divider { border-bottom: 1px dashed #E0DDD5; margin: 16px 0; }
 </style>
 </head>
 <body>
@@ -237,6 +245,7 @@
 <button class="submit-btn" onclick="submitRecord()">✅ 儲存記錄</button>
 <p class="status" id="status"></p>
 
+<!-- 近期紀錄列表 -->
 <div class="card">
   <div class="records-header">
     📊 近期二十筆紀錄
@@ -245,8 +254,37 @@
   <div id="records-list"><p class="empty">載入中…</p></div>
 </div>
 
+<!-- 新增：近期趨勢圖區域 -->
+<div class="card" id="charts-card" style="display: none;">
+  <div class="records-header">📈 近期趨勢圖</div>
+  
+  <div class="chart-title">❤️ 心跳趨勢 (bpm)</div>
+  <div class="chart-wrapper">
+    <canvas id="hrChart"></canvas>
+  </div>
+  
+  <div class="chart-divider"></div>
+  
+  <div class="chart-title">🩸 血壓趨勢 (mmHg)</div>
+  <div class="chart-wrapper" style="height: 220px;">
+    <canvas id="bpChart"></canvas>
+  </div>
+  
+  <div class="chart-divider"></div>
+  
+  <div class="chart-title">💨 血氧趨勢 (%)</div>
+  <div class="chart-wrapper">
+    <canvas id="spo2Chart"></canvas>
+  </div>
+</div>
+
 <script>
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxZwnQjorYfj8xY7iOTO5naWbDDuHDBVfRDX38kATqkfhw73oIJiPi6iyO1sPLuecRPqA/exec';
+
+// ── 趨勢圖全域變數 ─────────────────────────────────
+let hrChartInst = null;
+let bpChartInst = null;
+let spo2ChartInst = null;
 
 // ── 日期時間狀態 ──────────────────────────────────
 const now0 = new Date();
@@ -316,8 +354,6 @@ function calOverlayClick(e) { if(e.target===document.getElementById('cal-overlay
 // ── 時間滾輪 ─────────────────────────────────────
 const IH = 72; // item 高度，必須與 CSS 一致
 
-// 正中央為第3格（index=2），padding=2，
-// 讓第 idx 個數字對準中心：translateY = -(idx * IH)
 function idxToY(idx) { return -(idx * IH); }
 
 function buildWheel(listId, count, selected, maxAllowed) {
@@ -325,7 +361,6 @@ function buildWheel(listId, count, selected, maxAllowed) {
   if (selected > limit) selected = limit;
   if (selected < 0)    selected = 0;
   const el = document.getElementById(listId);
-  // 前後各 2 個空白 padding，讓頭尾數字也能滾到正中央
   let html = `<div class="wheel-item"></div><div class="wheel-item"></div>`;
   for (let i = 0; i < count; i++) {
     const active = i === selected ? ' active' : '';
@@ -431,7 +466,7 @@ function isAbnormalDia(v) { v=Number(v); return v<60||v>95; }
 function isAbnormalSpo2(v){ v=Number(v); return v<93; }
 function isAbnormalBp(bp) { const p=(bp||'').split('/'); return p.length===2&&(isAbnormalSys(p[0])||isAbnormalDia(p[1])); }
 
-// ── 從 Google Sheet 讀取近 20 筆 ─────────────────
+// ── 從 Google Sheet 讀取近 20 筆與畫圖 ─────────────
 async function fetchAndRenderRecords() {
   const list = document.getElementById('records-list');
   list.innerHTML = '<p class="empty">讀取中…</p>';
@@ -439,8 +474,12 @@ async function fetchAndRenderRecords() {
     const res  = await fetch(SCRIPT_URL + '?action=records&t=' + Date.now());
     const json = await res.json();
     if (!json.records || !json.records.length) {
-      list.innerHTML = '<p class="empty">尚無記錄</p>'; return;
+      list.innerHTML = '<p class="empty">尚無記錄</p>'; 
+      document.getElementById('charts-card').style.display = 'none';
+      return;
     }
+    
+    // 渲染列表
     list.innerHTML = json.records.map(r => {
       const dateTime = r.modifyTime || '';
       const posture  = r.posture || '';
@@ -470,10 +509,127 @@ async function fetchAndRenderRecords() {
         ${remark ? `<div class="record-remark">📝 ${remark}</div>` : ''}
       </div>`;
     }).join('');
+
+    // 渲染趨勢圖
+    document.getElementById('charts-card').style.display = 'block';
+    renderCharts(json.records);
+
   } catch(err) {
     list.innerHTML = '<p class="empty">讀取失敗，請確認網路</p>';
     console.error(err);
   }
+}
+
+// ── 繪製趨勢圖邏輯 ────────────────────────────────
+function renderCharts(records) {
+  // 將資料反轉，讓最舊的在左邊，最新的在右邊
+  const chartData = [...records].reverse();
+
+  // 處理 X 軸標籤 (將過長的日期時間縮短，如 2023/10/05 14:30 變成 10/05 14:30)
+  const labels = chartData.map(r => {
+    let dt = r.modifyTime || '';
+    if (dt.includes(' ')) {
+      let parts = dt.split(' ');
+      let dateParts = parts[0].split('/');
+      if (dateParts.length >= 2) {
+        return `${dateParts.slice(-2).join('/')} ${parts[1]}`;
+      }
+    }
+    return dt;
+  });
+
+  // 處理數值 (空值轉 null，讓折線圖會斷開而不會掉到 0)
+  const hrData = chartData.map(r => (r.hr && r.hr !== '—') ? Number(r.hr) : null);
+  const spo2Data = chartData.map(r => (r.spo2 && r.spo2 !== '—') ? Number(r.spo2) : null);
+  
+  const sysData = chartData.map(r => {
+    if (!r.bp || r.bp === '—') return null;
+    const parts = r.bp.split('/');
+    return (parts[0] && parts[0] !== '?') ? Number(parts[0]) : null;
+  });
+  
+  const diaData = chartData.map(r => {
+    if (!r.bp || r.bp === '—') return null;
+    const parts = r.bp.split('/');
+    return (parts[1] && parts[1] !== '?') ? Number(parts[1]) : null;
+  });
+
+  // 通用圖表設定
+  const commonOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    spanGaps: true, // 忽略 null 值，將兩端連起來
+    plugins: {
+      legend: { display: false }
+    },
+    scales: {
+      x: { 
+        ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } },
+        grid: { display: false }
+      }
+    },
+    elements: {
+      line: { tension: 0.3, borderWidth: 2 },
+      point: { radius: 3, hitRadius: 10 }
+    }
+  };
+
+  // 1. 繪製心跳圖
+  if (hrChartInst) hrChartInst.destroy();
+  hrChartInst = new Chart(document.getElementById('hrChart'), {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: '心跳', data: hrData, 
+        borderColor: '#E74C3C', backgroundColor: '#E74C3C'
+      }]
+    },
+    options: commonOptions
+  });
+
+  // 2. 繪製血壓圖 (雙折線)
+  if (bpChartInst) bpChartInst.destroy();
+  const bpOptions = JSON.parse(JSON.stringify(commonOptions)); // 複製設定
+  bpOptions.plugins.legend = { display: true, position: 'top', labels: { boxWidth: 12, font:{size: 11} } }; // 顯示圖例
+  
+  bpChartInst = new Chart(document.getElementById('bpChart'), {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: '收縮壓(高)', data: sysData, 
+          borderColor: '#3C3489', backgroundColor: '#3C3489'
+        },
+        {
+          label: '舒張壓(低)', data: diaData, 
+          borderColor: '#8CA5D3', backgroundColor: '#8CA5D3'
+        }
+      ]
+    },
+    options: bpOptions
+  });
+
+  // 3. 繪製血氧圖
+  if (spo2ChartInst) spo2ChartInst.destroy();
+  spo2ChartInst = new Chart(document.getElementById('spo2Chart'), {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: '血氧 SpO2', data: spo2Data, 
+        borderColor: '#1ABC9C', backgroundColor: '#1ABC9C'
+      }]
+    },
+    options: {
+      ...commonOptions,
+      scales: {
+        x: commonOptions.scales.x,
+        y: { suggestedMin: 90, suggestedMax: 100 } // 血氧通常在 90-100 之間
+      }
+    }
+  });
 }
 
 // ── 送出 ─────────────────────────────────────────
